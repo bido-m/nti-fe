@@ -1,0 +1,56 @@
+<div class="w-full flex flex-col items-center text-center text-white px-4 pt-28 pb-16 hero-section">
+  <span class="px-4 py-1.5 border border-gray-600 rounded-full inline-flex items-center gap-2 text-xs uppercase tracking-wider text-gray-300">
+    Full Catalog
+  </span>
+  <h1 class="text-3xl sm:text-5xl font-black mt-4">
+    Our <span class="text-[#D4AF37]">Luxury Collection</span>
+  </h1>
+  <p class="text-gray-400 mt-2 max-w-xl text-xs sm:text-sm">
+    Explore our carefully curated selection of authentic premium products
+  </p>
+
+  <div class="mt-8 w-full max-w-2xl flex flex-col sm:flex-row gap-3 px-4">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      (keyup.enter)="onSearch()"
+      placeholder="Search luxury products by title or description..."
+      class="flex-1 px-5 py-3 rounded-full text-black bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37] text-sm shadow-lg"
+    />
+    <button
+      (click)="onSearch()"
+      class="px-8 py-3 bg-[#D4AF37] text-black font-semibold rounded-full hover:bg-[#b8952b] transition text-sm cursor-pointer shadow-lg"
+    >
+      Search
+    </button>
+  </div>
+
+  @if (categories.length > 0) {
+    <div class="flex flex-wrap gap-2 justify-center mt-6">
+      <button
+        (click)="selectCategory(null)"
+        [class]="selectedCategoryId === null ? 'bg-[#D4AF37] text-black font-bold' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+        class="px-4 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer"
+      >
+        All
+      </button>
+      @for (cat of categories; track cat.id) {
+        <button
+          (click)="selectCategory(cat.id)"
+          [class]="selectedCategoryId === cat.id ? 'bg-[#D4AF37] text-black font-bold' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+          class="px-4 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer"
+        >
+          {{ cat.name }}
+        </button>
+      }
+    </div>
+  }
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-8 py-8">
+  <app-product-list
+    [products]="products"
+    [isLoading]="isLoading"
+    (addToCart)="handleAddToCart($event)"
+  ></app-product-list>
+</div>

@@ -1,0 +1,22 @@
+<div class="w-full min-h-screen flex flex-col justify-center items-center px-4 bg-white text-center">
+  <h1 class="text-7xl sm:text-9xl font-black text-gray-400 select-none leading-none">404</h1>
+  <div class="w-12 h-0.5 bg-[#D4AF37] my-5"></div>
+  <p class="text-xl sm:text-2xl font-bold text-gray-900">Page Not Found</p>
+  <p class="text-gray-500 text-sm sm:text-base mt-2 max-w-xs sm:max-w-sm">
+    The page you're looking for doesn't exist or has been moved.
+  </p>
+  <div class="flex gap-3 mt-8 flex-wrap justify-center">
+    <a
+      routerLink="/"
+      class="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full font-semibold text-sm hover:bg-[#D4AF37] hover:text-black transition-colors duration-300"
+    >
+      Back to Home
+    </a>
+    <button
+      (click)="goBack()"
+      class="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-full font-semibold text-sm hover:border-black transition-colors duration-300 cursor-pointer"
+    >
+      Go Back
+    </button>
+  </div>
+</div>

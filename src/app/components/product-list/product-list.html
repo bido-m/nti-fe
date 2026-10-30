@@ -1,0 +1,76 @@
+@if (isLoading) {
+  <div class="w-full flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#D4AF37]"></div>
+  </div>
+} @else if (products.length === 0) {
+  <div class="w-full text-center py-16 text-gray-500">
+    <p class="text-base font-medium">لا توجد منتجات مطابقة حالياً.</p>
+  </div>
+} @else {
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 py-4 w-full">
+    @for (product of products; track product.id) {
+      <div class="product-card rounded-2xl flex flex-col border border-gray-200 bg-white shadow-sm overflow-hidden hover:border-[#D4AF37]">
+        <div class="product-image w-full p-4 flex justify-center items-center relative bg-gray-50 overflow-hidden">
+          <div class="product-overlay absolute inset-0 flex justify-center items-center gap-3">
+            <a
+              [routerLink]="['/products', product.id]"
+              class="bg-white text-black px-4 py-2 rounded-full text-xs font-bold hover:bg-[#D4AF37] transition shadow"
+            >
+              View Details
+            </a>
+          </div>
+          <img
+            [src]="product.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600'"
+            [alt]="product.title"
+            class="product-img object-contain h-48 w-full"
+          />
+        </div>
+
+        <div class="p-4 flex flex-col flex-grow">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] uppercase font-bold text-[#D4AF37] tracking-wider">
+              {{ product.category?.name || 'Exclusive' }}
+            </span>
+            @if (product.stock > 0) {
+              <span class="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                In Stock
+              </span>
+            }
+          </div>
+
+          <a
+            [routerLink]="['/products', product.id]"
+            class="text-sm font-bold text-gray-900 hover:text-[#D4AF37] transition line-clamp-1 mt-1"
+          >
+            {{ product.title }}
+          </a>
+
+          @if (product.description) {
+            <p class="text-xs text-gray-500 line-clamp-2 mt-1.5 leading-relaxed">{{ product.description }}</p>
+          }
+        </div>
+
+        <div class="h-px bg-gray-100 w-11/12 mx-auto"></div>
+
+        <div class="p-4 flex justify-between items-center mt-auto">
+          <p class="text-lg font-black text-gray-900">${{ product.price }}</p>
+          <div class="flex items-center gap-2">
+            <a
+              [routerLink]="['/products', product.id]"
+              class="px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-300 text-gray-700 hover:border-black transition"
+            >
+              Details
+            </a>
+            <button
+              type="button"
+              (click)="onAddToCart(product)"
+              class="cart-btn px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}

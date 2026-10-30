@@ -1,0 +1,11 @@
+.hero-section {
+  gap: 1rem;
+  background: linear-gradient(to right, #000000, #111827, #030712);
+}
+
+@media (min-width: 576px) {
+  .hero-section {
+    gap: 1.25rem;
+    padding: 5rem !important;
+  }
+}

@@ -1,0 +1,126 @@
+<nav class="w-full fixed top-0 left-0 flex bg-white items-center justify-between shadow-md px-6 sm:px-12 py-4 z-50">
+  <div class="flex items-center gap-8">
+    <a routerLink="/" class="font-black text-xl tracking-widest text-black">
+      LUX<span class="text-[#D4AF37]">URY</span>
+    </a>
+
+    <ul class="hidden sm:flex gap-6 text-sm font-semibold text-gray-700">
+      <li><a routerLink="/" class="hover:text-[#D4AF37] transition">Home</a></li>
+      <li><a routerLink="/products" class="hover:text-[#D4AF37] transition">Products</a></li>
+      <li><a routerLink="/products/new" class="hover:text-[#D4AF37] transition">Add Product</a></li>
+    </ul>
+  </div>
+
+  <div class="flex items-center gap-5 text-gray-800">
+    <a routerLink="/products" class="cursor-pointer hover:text-[#D4AF37] transition" title="Search">
+      <fa-icon [icon]="faMagnifyingGlass"></fa-icon>
+    </a>
+    <span class="cursor-pointer hover:text-[#D4AF37] transition" title="Favorites">
+      <fa-icon [icon]="faHeart"></fa-icon>
+    </span>
+
+    <button
+      (click)="toggleCart()"
+      class="cursor-pointer hover:text-[#D4AF37] transition relative flex items-center justify-center border-0 bg-transparent"
+      title="Cart"
+    >
+      <fa-icon [icon]="faCartShopping" class="text-base"></fa-icon>
+      @if ((apiService.cartCount$ | async); as count) {
+        @if (count > 0) {
+          <span class="absolute -top-2 -right-2.5 bg-[#D4AF37] text-black font-black text-[10px] rounded-full h-4.5 w-4.5 flex items-center justify-center shadow-sm">
+            {{ count }}
+          </span>
+        }
+      }
+    </button>
+
+    <div class="h-5 w-px bg-gray-300"></div>
+
+    @if (authService.currentUser$ | async; as user) {
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-semibold text-gray-800 bg-gray-100 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+          <fa-icon [icon]="faUser" class="text-[#D4AF37]"></fa-icon>
+          {{ user.name }}
+        </span>
+        <button (click)="logout()" title="Logout" class="text-xs font-semibold text-red-500 hover:text-red-700 flex items-center gap-1 cursor-pointer">
+          <fa-icon [icon]="faRightFromBracket"></fa-icon>
+        </button>
+      </div>
+    } @else {
+      <div class="flex items-center gap-2">
+        <a routerLink="/login" class="text-xs font-semibold px-3 py-1.5 text-gray-800 hover:text-[#D4AF37] transition">Login</a>
+        <a routerLink="/register" class="text-xs font-semibold px-4 py-1.5 bg-[#D4AF37] text-black rounded-full hover:bg-[#b8952b] transition shadow-sm">Register</a>
+      </div>
+    }
+  </div>
+</nav>
+
+<!-- Cart Drawer -->
+@if (isCartOpen) {
+  <div class="fixed inset-0 z-50 overflow-hidden">
+    <div (click)="closeCart()" class="absolute inset-0 bg-black/50 transition-opacity"></div>
+    <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div class="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <fa-icon [icon]="faCartShopping" class="text-[#D4AF37] text-lg"></fa-icon>
+            <h2 class="text-lg font-bold text-gray-900">Your Shopping Cart</h2>
+          </div>
+          <button (click)="closeCart()" class="text-gray-400 hover:text-gray-700 p-1 cursor-pointer">
+            <fa-icon [icon]="faXmark" class="text-lg"></fa-icon>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 space-y-4">
+          @if ((apiService.cart$ | async); as items) {
+            @if (items.length === 0) {
+              <div class="text-center py-20 text-gray-500">
+                <p class="text-sm font-semibold">السلة فارغة حالياً</p>
+                <a routerLink="/products" (click)="closeCart()" class="mt-4 inline-block px-5 py-2 rounded-full text-xs font-bold bg-[#D4AF37] text-black">
+                  تصفح المنتجات
+                </a>
+              </div>
+            } @else {
+              @for (item of items; track item.id) {
+                <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                  <img [src]="item.product.image_url" [alt]="item.product.title" class="w-16 h-16 object-contain bg-white rounded-xl p-1" />
+                  <div class="flex-1 min-w-0">
+                    <h4 class="text-xs font-bold text-gray-900 truncate">{{ item.product.title }}</h4>
+                    <p class="text-xs font-black text-[#D4AF37] mt-1">${{ item.product.price }}</p>
+                    <div class="flex items-center gap-2 mt-2">
+                      <button (click)="decreaseQuantity(item)" class="w-6 h-6 rounded-full bg-white border border-gray-300 flex items-center justify-center text-xs font-bold cursor-pointer">−</button>
+                      <span class="text-xs font-bold px-1.5">{{ item.quantity }}</span>
+                      <button (click)="increaseQuantity(item)" class="w-6 h-6 rounded-full bg-white border border-gray-300 flex items-center justify-center text-xs font-bold cursor-pointer">+</button>
+                    </div>
+                  </div>
+                  <button (click)="removeItem(item.product.id)" class="text-red-400 hover:text-red-600 p-2 cursor-pointer">
+                    <fa-icon [icon]="faTrash" class="text-xs"></fa-icon>
+                  </button>
+                </div>
+              }
+            }
+          }
+        </div>
+
+        @if ((apiService.cart$ | async); as items) {
+          @if (items.length > 0) {
+            <div class="p-6 border-t border-gray-100 bg-gray-50 space-y-4">
+              <div class="flex items-center justify-between text-base font-extrabold text-gray-900">
+                <span>Subtotal</span>
+                <span>${{ (apiService.cartTotal$ | async) | number:'1.2-2' }}</span>
+              </div>
+              <div class="flex gap-2">
+                <button (click)="clearCart()" class="flex-1 py-3 text-xs font-bold border border-gray-300 rounded-full text-gray-700 hover:bg-gray-200 cursor-pointer transition">
+                  Clear
+                </button>
+                <button (click)="checkout()" class="flex-2 py-3 text-xs font-bold bg-[#D4AF37] text-black rounded-full hover:bg-[#b8952b] cursor-pointer transition shadow-md">
+                  Checkout
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}

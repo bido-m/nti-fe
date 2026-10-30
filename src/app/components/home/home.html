@@ -1,0 +1,120 @@
+<section class="w-full flex flex-col">
+  <div class="w-full flex flex-col items-center text-center gap-4 sm:gap-5 px-6 pt-32 pb-16 sm:pb-24 text-white bg-linear-to-r from-black via-gray-900 to-gray-950 border-b-3 border-[#D4AF37]">
+    <p class="px-5 py-2 text-center items-center border rounded-full border-gray-600 w-fit flex gap-2 text-xs sm:text-sm uppercase tracking-widest text-gray-300">
+      Exclusive 2026 Collection
+    </p>
+
+    <h1 class="font-extrabold text-3xl sm:text-6xl lg:text-7xl tracking-tight">
+      Discover Luxury
+      <span class="block text-[#D4AF37] mt-2">That Lasts Forever</span>
+    </h1>
+
+    <p class="text-gray-400 max-w-2xl text-sm sm:text-base leading-relaxed">
+      Curated premium products that combine timeless elegance with modern sophistication. Experience quality that speaks for itself.
+    </p>
+
+    <div class="w-full flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mt-6">
+      <button
+        (click)="scrollToProducts()"
+        class="border px-8 py-4 shadow-2xl border-gray-700 rounded-2xl bg-[#D4AF37] text-black font-bold hover:scale-105 transition-all duration-300 w-full sm:w-auto cursor-pointer text-sm"
+      >
+        Explore Collection
+      </button>
+
+      <a
+        routerLink="/products"
+        class="border px-8 py-4 shadow-2xl border-gray-700 rounded-2xl hover:text-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300 w-full sm:w-auto text-sm font-semibold"
+      >
+        All Products
+      </a>
+    </div>
+
+    <div class="mt-12 w-3/4 sm:w-1/2 h-px bg-gray-800"></div>
+
+    <div class="flex flex-col sm:flex-row justify-between items-center mt-10 gap-6 sm:gap-0 w-full max-w-3xl">
+      <div class="flex flex-col gap-1 items-center sm:border-r sm:border-gray-800 sm:pr-12 pb-4 sm:pb-0 w-full sm:w-auto">
+        <p class="text-3xl font-extrabold text-white">+10K</p>
+        <p class="text-gray-400 text-xs">Happy Customers</p>
+      </div>
+
+      <div class="flex flex-col gap-1 items-center sm:mx-8 pb-4 sm:pb-0 w-full sm:w-auto">
+        <p class="text-3xl font-extrabold text-[#D4AF37]">+500</p>
+        <p class="text-gray-400 text-xs">Premium Products</p>
+      </div>
+
+      <div class="flex flex-col gap-1 items-center sm:border-l sm:border-gray-800 sm:pl-12 w-full sm:w-auto">
+        <p class="text-3xl font-extrabold text-white">4.9 ★</p>
+        <p class="text-gray-400 text-xs">Average Rating</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="collection" class="w-full bg-gray-50 py-16 px-4 sm:px-8">
+    <div class="max-w-7xl mx-auto flex flex-col items-center">
+      <div class="text-center mb-8">
+        <span class="text-xs uppercase font-bold tracking-widest text-[#D4AF37] bg-yellow-50 px-3 py-1 rounded-full border border-yellow-200">
+          Featured Categories
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mt-3">
+          Explore by Category
+        </h2>
+        <p class="text-gray-500 text-sm mt-2 max-w-lg">
+          Select a category to browse our curated selections directly
+        </p>
+      </div>
+
+      @if (categories.length > 0) {
+        <div class="flex flex-wrap justify-center gap-2 sm:gap-3 mb-10 w-full max-w-3xl">
+          <button
+            (click)="selectCategory(null)"
+            [class]="selectedCategoryId === null ? 'bg-black text-[#D4AF37] border-black shadow-md' : 'bg-white text-gray-700 border-gray-200 hover:border-[#D4AF37]'"
+            class="px-5 py-2 rounded-full text-xs sm:text-sm font-semibold border transition cursor-pointer"
+          >
+            All Products
+          </button>
+          @for (cat of categories; track cat.id) {
+            <button
+              (click)="selectCategory(cat.id)"
+              [class]="selectedCategoryId === cat.id ? 'bg-black text-[#D4AF37] border-black shadow-md' : 'bg-white text-gray-700 border-gray-200 hover:border-[#D4AF37]'"
+              class="px-5 py-2 rounded-full text-xs sm:text-sm font-semibold border transition cursor-pointer"
+            >
+              {{ cat.name }}
+            </button>
+          }
+        </div>
+      }
+
+      <div class="w-full">
+        <app-product-list
+          [products]="products"
+          [isLoading]="isLoading"
+          (addToCart)="handleAddToCart($event)"
+        ></app-product-list>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full flex flex-col items-center gap-14 py-20 px-6 bg-white border-t border-gray-200">
+    <div class="flex flex-col items-center gap-2 text-center">
+      <span class="text-xs uppercase font-bold tracking-widest text-[#D4AF37]">Excellence</span>
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900">
+        Why Choose <span class="text-[#D4AF37]">Luxury</span>
+      </h2>
+      <p class="text-gray-600 text-sm max-w-md">
+        Experience shopping excellence with our commitment to quality, authenticity and service
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl">
+      @for (item of whyChoose; track item.head) {
+        <div class="flex flex-col gap-4 rounded-2xl transition-all duration-300 items-center hover:border-[#D4AF37] hover:shadow-xl p-6 border border-gray-200 bg-gray-50 text-center">
+          <div class="flex items-center p-5 rounded-2xl justify-center bg-[#D4AF37] text-black text-xl">
+            <fa-icon [icon]="item.icon"></fa-icon>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900">{{ item.head }}</h3>
+          <p class="text-gray-600 text-xs leading-relaxed">{{ item.info }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
