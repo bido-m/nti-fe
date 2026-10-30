@@ -1,179 +1,265 @@
-<div class="min-h-screen bg-gray-50 pt-24 pb-16 px-4 sm:px-8 max-w-7xl mx-auto">
-  @if (isLoading) {
-    <div class="w-full flex justify-center items-center py-32">
-      <div class="animate-spin rounded-full h-14 w-14 border-4 border-gray-200 border-t-[#D4AF37]"></div>
-    </div>
-  } @else if (!product) {
-    <div class="text-center py-32 bg-white rounded-3xl shadow-sm border border-gray-200 max-w-lg mx-auto p-8">
-      <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">!</div>
-      <h2 class="text-2xl font-bold text-gray-900 mb-2">المنتج غير موجود</h2>
-      <p class="text-gray-500 mb-6">عذراً، لم يتم العثور على تفاصيل هذا المنتج أو تم نقله.</p>
-      <a routerLink="/products" class="inline-block px-6 py-3 bg-[#D4AF37] text-black font-semibold rounded-full hover:bg-[#b8952b] transition">
-        تصفح المنتجات
-      </a>
-    </div>
-  } @else {
-    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-8 overflow-x-auto py-2">
-      <a routerLink="/" class="hover:text-[#D4AF37] transition">Home</a>
-      <span>/</span>
-      <a routerLink="/products" class="hover:text-[#D4AF37] transition">Products</a>
-      <span>/</span>
-      @if (product.category) {
-        <span class="text-gray-600">{{ product.category.name }}</span>
-        <span>/</span>
-      }
-      <span class="text-gray-900 font-semibold truncate">{{ product.title }}</span>
-    </nav>
-
-    @if (addedAlert) {
-      <div class="mb-6 p-4 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-2xl flex items-center justify-between shadow-sm">
-        <div class="flex items-center gap-3">
-          <span class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold">✓</span>
-          <span class="font-medium text-sm">تمت إضافة "{{ product.title }}" إلى حقيبة التسوق بنجاح!</span>
-        </div>
-        <button (click)="addedAlert = false" class="text-emerald-700 hover:text-emerald-950 text-sm font-bold">✕</button>
+<!-- Added to Cart Notification Toast -->
+@if (addedAlert()) {
+  <div class="fixed bottom-6 right-6 z-50 animate-bounce-short">
+    <div class="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#182032] to-[#0D121F] border border-[#D4AF37]/50 shadow-[0_10px_30px_rgba(212,175,55,0.25)] flex items-center gap-3 text-xs text-white">
+      <div class="w-6 h-6 rounded-full bg-[#D4AF37] text-black flex items-center justify-center font-bold text-[10px]">
+        <fa-icon [icon]="faCheck"></fa-icon>
       </div>
-    }
+      <span>Added {{ quantity() }} piece(s) to your luxury bag!</span>
+    </div>
+  </div>
+}
 
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 sm:p-10">
-      <div class="flex flex-col gap-4">
-        <div class="w-full h-96 sm:h-[480px] bg-gray-50 rounded-2xl flex items-center justify-center p-6 border border-gray-100 overflow-hidden relative group">
-          <img
-            [src]="product.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800'"
-            [alt]="product.title"
-            class="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105"
-          />
-          <span class="absolute top-4 left-4 bg-black text-[#D4AF37] text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-[#D4AF37]">
-            {{ product.category?.name || 'Exclusive' }}
-          </span>
-        </div>
-      </div>
+<div class="min-h-screen bg-[#0B0F19] text-white pt-28 pb-20 px-4 sm:px-8">
+  <div class="max-w-7xl mx-auto">
+    <!-- Back to Catalog Link -->
+    <a
+      routerLink="/products"
+      class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-[#D4AF37] transition mb-8 group"
+    >
+      <fa-icon [icon]="faArrowLeft" class="group-hover:-translate-x-1 transition-transform"></fa-icon>
+      <span>Back to Curated Collection</span>
+    </a>
 
-      <div class="flex flex-col justify-between">
+    <!-- Loading Skeleton -->
+    @if (isLoading()) {
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-pulse">
+        <div class="h-96 sm:h-[480px] bg-white/5 rounded-3xl"></div>
         <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <span class="text-xs uppercase font-bold tracking-widest text-[#D4AF37] bg-yellow-50 px-3 py-1 rounded-full border border-yellow-200">
-              {{ product.category?.name || 'Luxury Edition' }}
-            </span>
-            @if (product.stock > 0) {
-              <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                In Stock ({{ product.stock }} available)
+          <div class="h-4 bg-white/10 rounded w-1/4"></div>
+          <div class="h-8 bg-white/10 rounded w-3/4"></div>
+          <div class="h-6 bg-white/10 rounded w-1/3"></div>
+          <div class="h-20 bg-white/5 rounded w-full"></div>
+          <div class="h-12 bg-white/10 rounded-2xl w-full"></div>
+        </div>
+      </div>
+    } @else if (!product()) {
+      <!-- Not Found State -->
+      <div class="text-center py-24 bg-white/5 rounded-3xl border border-white/5">
+        <h2 class="text-xl font-bold text-white">Product Not Found</h2>
+        <p class="text-xs text-slate-400 mt-2">The luxury piece you are looking for is no longer available in our collection.</p>
+        <a
+          routerLink="/products"
+          class="mt-6 inline-block px-6 py-2.5 rounded-xl text-xs font-bold text-black bg-[#D4AF37]"
+        >
+          Explore Other Pieces
+        </a>
+      </div>
+    } @else {
+      <!-- Product Showcase -->
+      @if (product(); as item) {
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <!-- Left Column: Product Image in High-End Showcase Frame -->
+          <div class="relative rounded-3xl bg-[#121929]/70 border border-white/10 p-8 sm:p-12 flex items-center justify-center overflow-hidden shadow-2xl">
+            <!-- Subtle gold ambient glow behind image -->
+            <div class="absolute inset-0 bg-gradient-to-tr from-[#D4AF37]/10 via-transparent to-amber-500/5 pointer-events-none"></div>
+
+            <div class="absolute top-4 left-4 z-10 flex items-center gap-2">
+              <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#D4AF37] bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg border border-[#D4AF37]/30">
+                {{ item.category?.name || 'Exclusive' }}
               </span>
-            } @else {
-              <span class="text-xs font-semibold text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-200">
-                Out of Stock
-              </span>
+            </div>
+
+            <img
+              [src]="item.image_url"
+              [alt]="item.title"
+              class="max-h-[380px] w-full object-contain relative z-10 drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)] hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+
+          <!-- Right Column: Product Details & Controls -->
+          <div class="flex flex-col space-y-6">
+            <!-- Brand & Badges -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-black uppercase tracking-widest text-[#D4AF37]">
+                  {{ item.brand?.name || 'Maison Luxury' }}
+                </span>
+                <span class="text-slate-500">•</span>
+                <span class="text-xs text-slate-400">Authentic Series</span>
+              </div>
+
+              @if (item.stock > 0) {
+                <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  {{ item.stock }} Available in Vault
+                </span>
+              } @else {
+                <span class="text-[10px] font-semibold text-rose-400 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20">
+                  Currently Sold Out
+                </span>
+              }
+            </div>
+
+            <!-- Product Title -->
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+              {{ item.title }}
+            </h1>
+
+            <!-- Rating & Reviews -->
+            <div class="flex items-center gap-3 text-xs">
+              <div class="flex items-center gap-1 text-amber-400">
+                <fa-icon [icon]="faStar"></fa-icon>
+                <fa-icon [icon]="faStar"></fa-icon>
+                <fa-icon [icon]="faStar"></fa-icon>
+                <fa-icon [icon]="faStar"></fa-icon>
+                <fa-icon [icon]="faStar"></fa-icon>
+                <span class="font-bold text-white ml-1">{{ item.rating?.rate || '4.9' }}</span>
+              </div>
+              <span class="text-slate-500">|</span>
+              <span class="text-slate-400">{{ item.rating?.count || 48 }} Verified Reviews</span>
+            </div>
+
+            <!-- Price Card -->
+            <div class="p-5 rounded-2xl bg-white/[0.03] border border-white/5 flex items-baseline justify-between">
+              <div>
+                <span class="text-[10px] font-semibold uppercase text-slate-400 tracking-wider block">Acquisition Price</span>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                  <span class="text-3xl font-black text-white">${{ item.price }}</span>
+                  <span class="text-xs text-emerald-400 font-semibold">Taxes & VIP Duties Included</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Description & Provenance</h3>
+              <p class="text-xs sm:text-sm text-slate-400 leading-relaxed font-light">
+                {{ item.description || 'Carefully fashioned with exceptional materials and engineered to satisfy the highest sartorial and horological standards. Guaranteed authentic with certificate of origin.' }}
+              </p>
+            </div>
+
+            <!-- Colors (if any) -->
+            @if (item.colors && item.colors.length > 0) {
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-2">Finishing / Color</span>
+                <div class="flex flex-wrap gap-2">
+                  @for (c of item.colors; track c) {
+                    <button
+                      (click)="selectColor(c)"
+                      [class]="selectedColor() === c
+                        ? 'bg-[#D4AF37] text-black font-extrabold border-[#D4AF37]'
+                        : 'bg-white/5 text-slate-300 border-white/10 hover:border-white/20'"
+                      class="px-4 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer"
+                    >
+                      {{ c }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Sizes (if any) -->
+            @if (item.sizes && item.sizes.length > 0) {
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-2">Specification / Size</span>
+                <div class="flex flex-wrap gap-2">
+                  @for (s of item.sizes; track s) {
+                    <button
+                      (click)="selectSize(s)"
+                      [class]="selectedSize() === s
+                        ? 'bg-[#D4AF37] text-black font-extrabold border-[#D4AF37]'
+                        : 'bg-white/5 text-slate-300 border-white/10 hover:border-white/20'"
+                      class="px-4 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer"
+                    >
+                      {{ s }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Quantity Stepper & Add to Bag -->
+            <div class="flex flex-col sm:flex-row items-center gap-4 pt-2">
+              <div class="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-1.5 w-full sm:w-auto justify-between">
+                <button
+                  (click)="decrement()"
+                  class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 text-white flex items-center justify-center font-bold text-xs transition cursor-pointer"
+                >
+                  <fa-icon [icon]="faMinus"></fa-icon>
+                </button>
+                <span class="px-4 text-sm font-extrabold text-white">{{ quantity() }}</span>
+                <button
+                  (click)="increment()"
+                  class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 text-white flex items-center justify-center font-bold text-xs transition cursor-pointer"
+                >
+                  <fa-icon [icon]="faPlus"></fa-icon>
+                </button>
+              </div>
+
+              <button
+                (click)="onAddToCart()"
+                [disabled]="item.stock <= 0"
+                class="w-full sm:flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-wider text-black bg-gradient-to-r from-[#FFE082] via-[#D4AF37] to-[#B8952B] hover:brightness-110 active:scale-95 transition shadow-[0_0_25px_rgba(212,175,55,0.35)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40"
+              >
+                <fa-icon [icon]="faCartShopping"></fa-icon>
+                <span>Add to Luxury Bag</span>
+              </button>
+            </div>
+
+            <!-- Assurances Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-white/5">
+              <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
+                <fa-icon [icon]="faShieldHalved" class="text-[#D4AF37] text-sm"></fa-icon>
+                <p class="text-[11px] font-bold text-white mt-1">100% Genuine</p>
+                <p class="text-[9px] text-slate-400">Certified by experts</p>
+              </div>
+              <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
+                <fa-icon [icon]="faTruckFast" class="text-[#D4AF37] text-sm"></fa-icon>
+                <p class="text-[11px] font-bold text-white mt-1">Insured VIP Transit</p>
+                <p class="text-[9px] text-slate-400">Complimentary delivery</p>
+              </div>
+              <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
+                <fa-icon [icon]="faRotate" class="text-[#D4AF37] text-sm"></fa-icon>
+                <p class="text-[11px] font-bold text-white mt-1">30-Day Returns</p>
+                <p class="text-[9px] text-slate-400">No questions asked</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Specifications Breakdown Table -->
+        <div class="mt-20 pt-10 border-t border-white/5">
+          <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <fa-icon [icon]="faCrown" class="text-[#D4AF37] text-sm"></fa-icon>
+            <span>Master Specifications</span>
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @for (key of getSpecKeys(item.specifications); track key) {
+              <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ key }}</span>
+                <span class="text-xs font-bold text-white">{{ item.specifications![key] }}</span>
+              </div>
             }
           </div>
+        </div>
 
-          <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
-            {{ product.title }}
-          </h1>
-
-          <div class="flex items-baseline gap-3 py-2 border-b border-gray-100">
-            <span class="text-3xl sm:text-4xl font-black text-gray-900">${{ product.price }}</span>
-            <span class="text-sm text-gray-400 line-through">${{ product.price * 1.2 | number:'1.0-0' }}</span>
-            <span class="text-xs font-bold text-[#D4AF37] bg-black px-2.5 py-0.5 rounded-full">Save 20%</span>
-          </div>
-
-          <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
-            {{ product.description || 'Crafted with peerless artistry and selected premium materials, this exclusive piece represents the pinnacle of luxury and enduring sophistication.' }}
-          </p>
-
-          <div class="space-y-3 pt-2">
-            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Product Specifications</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                <span class="text-gray-400 block mb-0.5">Reference ID</span>
-                <span class="font-semibold text-gray-800">LUX-{{ product.id }}092</span>
-              </div>
-              <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                <span class="text-gray-400 block mb-0.5">Category</span>
-                <span class="font-semibold text-gray-800">{{ product.category?.name || 'Exclusive' }}</span>
-              </div>
-              @if (product.specifications) {
-                @for (key of getSpecKeys(product.specifications); track key) {
-                  <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                    <span class="text-gray-400 block mb-0.5">{{ key }}</span>
-                    <span class="font-semibold text-gray-800">{{ product.specifications[key] }}</span>
+        <!-- Related Products Section -->
+        @if (relatedProducts().length > 0) {
+          <div class="mt-20 pt-10 border-t border-white/5">
+            <h2 class="text-xl font-bold text-white mb-6">Related High Pieces</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              @for (rel of relatedProducts(); track rel.id) {
+                <a
+                  [routerLink]="['/products', rel._id || rel.id]"
+                  class="rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-[#D4AF37]/40 p-4 transition flex flex-col group"
+                >
+                  <div class="w-full h-40 flex items-center justify-center p-2 mb-3 bg-black/20 rounded-xl overflow-hidden">
+                    <img
+                      [src]="rel.image_url"
+                      [alt]="rel.title"
+                      class="max-h-full object-contain group-hover:scale-105 transition-transform"
+                    />
                   </div>
-                }
+                  <h4 class="text-xs font-bold text-white truncate">{{ rel.title }}</h4>
+                  <p class="text-xs font-black text-[#D4AF37] mt-1">${{ rel.price }}</p>
+                </a>
               }
             </div>
           </div>
-        </div>
-
-        <div class="pt-6 border-t border-gray-100 mt-6 space-y-4">
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-            <div class="flex items-center justify-between border border-gray-300 rounded-full px-4 py-2 w-full sm:w-36 bg-gray-50">
-              <button
-                (click)="decrement()"
-                [disabled]="quantity <= 1"
-                class="text-gray-600 hover:text-black font-bold text-lg px-2 disabled:opacity-30 cursor-pointer"
-              >−</button>
-              <span class="font-bold text-gray-900 text-sm">{{ quantity }}</span>
-              <button
-                (click)="increment()"
-                [disabled]="quantity >= product.stock"
-                class="text-gray-600 hover:text-black font-bold text-lg px-2 disabled:opacity-30 cursor-pointer"
-              >+</button>
-            </div>
-
-            <button
-              (click)="onAddToCart()"
-              class="flex-1 py-3.5 px-6 bg-[#D4AF37] hover:bg-[#b8952b] text-black font-bold rounded-full transition shadow-md flex items-center justify-center gap-2 cursor-pointer text-sm"
-            >
-              <fa-icon [icon]="faCartShopping"></fa-icon>
-              <span>Add to Cart</span>
-            </button>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 pt-4 text-xs text-gray-600">
-            <div class="flex items-center gap-2">
-              <fa-icon [icon]="faAward" class="text-[#D4AF37]"></fa-icon>
-              <span>Certified Authenticity Guaranteed</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <fa-icon [icon]="faRotate" class="text-[#D4AF37]"></fa-icon>
-              <span>30-Day Complimentary Returns</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    @if (relatedProducts.length > 0) {
-      <div class="mt-16">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h2 class="text-2xl font-bold text-gray-900">You May Also Like</h2>
-            <p class="text-sm text-gray-500">More exceptional pieces from the same collection</p>
-          </div>
-          <a routerLink="/products" class="text-xs font-semibold text-[#D4AF37] hover:underline">
-            View All Products →
-          </a>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          @for (rel of relatedProducts; track rel.id) {
-            <a
-              [routerLink]="['/products', rel.id]"
-              class="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group block"
-            >
-              <div class="h-44 bg-gray-50 rounded-xl flex items-center justify-center p-3 overflow-hidden mb-3">
-                <img
-                  [src]="rel.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600'"
-                  [alt]="rel.title"
-                  class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <p class="text-xs uppercase font-bold text-[#D4AF37] tracking-wider">{{ rel.category?.name || 'Exclusive' }}</p>
-              <h3 class="text-sm font-semibold text-gray-900 line-clamp-1 mt-1 group-hover:text-[#D4AF37] transition">{{ rel.title }}</h3>
-              <p class="text-base font-bold text-gray-900 mt-2">${{ rel.price }}</p>
-            </a>
-          }
-        </div>
-      </div>
+        }
+      }
     }
-  }
+  </div>
 </div>

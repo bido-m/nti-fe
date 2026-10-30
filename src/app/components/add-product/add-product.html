@@ -1,111 +1,281 @@
-<div class="min-h-screen bg-gray-50 pt-24 pb-16 px-4 max-w-3xl mx-auto">
-  <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-8 sm:p-12">
-    <div class="mb-8">
-      <span class="text-xs uppercase font-bold tracking-widest text-[#D4AF37]">Management</span>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">Add New Product</h1>
-      <p class="text-gray-500 text-sm mt-1">Enter luxury product specifications and details</p>
+<div class="min-h-screen bg-[#0B0F19] text-white pt-28 pb-20 px-4 sm:px-8">
+  <div class="max-w-6xl mx-auto">
+    <!-- Top Nav / Back -->
+    <div class="flex items-center justify-between mb-8">
+      <a
+        routerLink="/products"
+        class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-[#D4AF37] transition group"
+      >
+        <fa-icon [icon]="faArrowLeft" class="group-hover:-translate-x-1 transition-transform"></fa-icon>
+        <span>Back to Catalog</span>
+      </a>
+
+      <!-- 1-Click Autofill Demo Button -->
+      <button
+        type="button"
+        (click)="autofillSample()"
+        class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-amber-300 text-xs font-bold transition flex items-center gap-2 cursor-pointer"
+      >
+        <fa-icon [icon]="faWandMagicSparkles"></fa-icon>
+        <span>Fill Sample Piece</span>
+      </button>
     </div>
 
-    @if (successMessage) {
-      <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-sm font-semibold">
-        {{ successMessage }}
+    <!-- Page Header -->
+    <div class="mb-10 text-center sm:text-left">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/25 text-[11px] font-bold text-[#D4AF37] uppercase tracking-widest mb-3">
+        <fa-icon [icon]="faCrown" class="text-[10px]"></fa-icon>
+        <span>Maison Curator Portal</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+        Register New <span class="luxury-text-gradient">Luxury Creation</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-400 mt-2">
+        Add certified inventory to the global catalog. Fully integrated with MongoDB backend models.
+      </p>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (successMessage()) {
+      <div class="mb-8 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-3 text-xs">
+        <fa-icon [icon]="faCheck" class="text-lg"></fa-icon>
+        <span class="font-bold">{{ successMessage() }}</span>
       </div>
     }
 
-    @if (errorMessage) {
-      <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-2xl text-sm font-semibold">
-        {{ errorMessage }}
+    @if (errorMessage()) {
+      <div class="mb-8 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center gap-3 text-xs">
+        <fa-icon [icon]="faCircleExclamation" class="text-lg"></fa-icon>
+        <span>{{ errorMessage() }}</span>
       </div>
     }
 
-    <form (ngSubmit)="onSubmit()" class="space-y-6">
-      <div>
-        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Product Title *</label>
-        <input
-          type="text"
-          [(ngModel)]="title"
-          name="title"
-          required
-          placeholder="e.g. Rolex Submariner Date"
-          class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#D4AF37] focus:outline-none text-sm"
-        />
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <!-- Split Grid: Form (Left) & Real-time Live Preview (Right) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+      <!-- Left: Input Form (7 cols) -->
+      <form (ngSubmit)="onSubmit()" class="lg:col-span-7 rounded-3xl bg-[#121929]/70 border border-white/10 p-6 sm:p-8 space-y-6 shadow-2xl">
+        <!-- Title -->
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Category *</label>
-          <select
-            [(ngModel)]="categoryId"
-            name="categoryId"
-            class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#D4AF37] focus:outline-none text-sm bg-white"
-          >
-            <option [ngValue]="null">Select Category</option>
-            @for (cat of categories; track cat.id) {
-              <option [ngValue]="cat.id">{{ cat.name }}</option>
-            }
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Price (USD) *</label>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+            Creation Name / Model Title *
+          </label>
           <input
-            type="number"
-            [(ngModel)]="price"
-            name="price"
+            type="text"
+            [ngModel]="name()"
+            (ngModelChange)="name.set($event)"
+            name="name"
             required
-            placeholder="e.g. 14500"
-            class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#D4AF37] focus:outline-none text-sm"
+            placeholder="e.g. iPhone 15 Pro Max Titanium"
+            class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-[#D4AF37] text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none transition"
           />
         </div>
-      </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Category & Brand Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+              Category *
+            </label>
+            <select
+              [ngModel]="categoryId()"
+              (ngModelChange)="onCategoryChange($event)"
+              name="categoryId"
+              class="w-full px-4 py-3 rounded-xl bg-[#0D1322] border border-white/10 focus:border-[#D4AF37] text-white text-xs sm:text-sm focus:outline-none cursor-pointer"
+            >
+              @for (cat of categories(); track cat.id) {
+                <option [value]="cat._id || cat.id">{{ cat.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+              Brand / Maison
+            </label>
+            <select
+              [ngModel]="brandId()"
+              (ngModelChange)="brandId.set($event)"
+              name="brandId"
+              class="w-full px-4 py-3 rounded-xl bg-[#0D1322] border border-white/10 focus:border-[#D4AF37] text-white text-xs sm:text-sm focus:outline-none cursor-pointer"
+            >
+              @for (b of brands(); track b.id) {
+                <option [value]="b._id || b.id">{{ b.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- Subcategory (if available) -->
+        @if (filteredSubcategories().length > 0) {
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+              Subcategory
+            </label>
+            <select
+              [ngModel]="subcategoryId()"
+              (ngModelChange)="subcategoryId.set($event)"
+              name="subcategoryId"
+              class="w-full px-4 py-3 rounded-xl bg-[#0D1322] border border-white/10 focus:border-[#D4AF37] text-white text-xs sm:text-sm focus:outline-none cursor-pointer"
+            >
+              @for (sub of filteredSubcategories(); track sub.id) {
+                <option [value]="sub._id || sub.id">{{ sub.name }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <!-- Price & Stock Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+              Price (USD $) *
+            </label>
+            <input
+              type="number"
+              [ngModel]="price()"
+              (ngModelChange)="price.set($event)"
+              name="price"
+              required
+              min="1"
+              placeholder="e.g. 1299"
+              class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-[#D4AF37] text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none transition"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+              Vault Stock (Units) *
+            </label>
+            <input
+              type="number"
+              [ngModel]="stock()"
+              (ngModelChange)="stock.set($event)"
+              name="stock"
+              min="0"
+              placeholder="e.g. 15"
+              class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-[#D4AF37] text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none transition"
+            />
+          </div>
+        </div>
+
+        <!-- Image URL or Upload -->
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Stock Quantity</label>
-          <input
-            type="number"
-            [(ngModel)]="stock"
-            name="stock"
-            placeholder="10"
-            class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#D4AF37] focus:outline-none text-sm"
-          />
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+            Image Reference (Direct URL or Upload File)
+          </label>
+          <div class="space-y-3">
+            <input
+              type="url"
+              [ngModel]="imageUrl()"
+              (ngModelChange)="imageUrl.set($event)"
+              name="imageUrl"
+              placeholder="https://images.unsplash.com/photo-..."
+              class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-[#D4AF37] text-white placeholder-slate-500 text-xs focus:outline-none transition"
+            />
+
+            <div class="flex items-center gap-3">
+              <label class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-300 cursor-pointer flex items-center gap-2 transition">
+                <fa-icon [icon]="faCloudArrowUp"></fa-icon>
+                <span>Upload Device Image</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  (change)="onFileSelected($event)"
+                  class="hidden"
+                />
+              </label>
+
+              @if (selectedFile) {
+                <span class="text-xs text-amber-300 truncate max-w-xs">{{ selectedFile.name }}</span>
+              }
+            </div>
+          </div>
         </div>
 
+        <!-- Description -->
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Image URL</label>
-          <input
-            type="url"
-            [(ngModel)]="imageUrl"
-            name="imageUrl"
-            placeholder="https://..."
-            class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#D4AF37] focus:outline-none text-sm"
-          />
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+            Artisanal Description
+          </label>
+          <textarea
+            [ngModel]="description()"
+            (ngModelChange)="description.set($event)"
+            name="description"
+            rows="3"
+            placeholder="Describe the craftsmanship, materials, and distinct pedigree of this piece..."
+            class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-[#D4AF37] text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none transition"
+          ></textarea>
         </div>
-      </div>
 
-      <div>
-        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Description</label>
-        <textarea
-          [(ngModel)]="description"
-          name="description"
-          rows="4"
-          placeholder="Detailed description of craftsmanship, materials, and features..."
-          class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#D4AF37] focus:outline-none text-sm"
-        ></textarea>
-      </div>
-
-      <div class="flex items-center justify-end gap-4 pt-4">
-        <a routerLink="/products" class="px-6 py-3 rounded-full text-xs font-bold border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
-          Cancel
-        </a>
+        <!-- Submit Button -->
         <button
           type="submit"
-          [disabled]="isSubmitting"
-          class="px-8 py-3 rounded-full text-xs font-bold bg-[#D4AF37] hover:bg-[#b8952b] text-black transition shadow-md cursor-pointer disabled:opacity-50"
+          [disabled]="isSubmitting()"
+          class="w-full py-4 rounded-2xl font-black text-xs uppercase tracking-wider text-black bg-gradient-to-r from-[#FFE082] via-[#D4AF37] to-[#B8952B] hover:brightness-110 active:scale-95 transition shadow-[0_0_25px_rgba(212,175,55,0.35)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
         >
-          {{ isSubmitting ? 'Saving...' : 'Add Product' }}
+          @if (isSubmitting()) {
+            <div class="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+            <span>Committing to Catalog...</span>
+          } @else {
+            <fa-icon [icon]="faPlus"></fa-icon>
+            <span>Publish Luxury Creation</span>
+          }
         </button>
+      </form>
+
+      <!-- Right: Real-time Live Preview (5 cols) -->
+      <div class="lg:col-span-5 flex flex-col space-y-4">
+        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+          <fa-icon [icon]="faImage" class="text-[#D4AF37]"></fa-icon>
+          <span>Live Catalog Display Preview</span>
+        </div>
+
+        <!-- Interactive Preview Card -->
+        <div class="rounded-3xl bg-[#121929]/70 border border-[#D4AF37]/40 shadow-2xl overflow-hidden p-5 flex flex-col">
+          <div class="relative w-full h-56 p-4 flex items-center justify-center bg-black/40 rounded-2xl overflow-hidden mb-4">
+            <span class="absolute top-3 left-3 text-[10px] font-extrabold uppercase tracking-wider text-[#D4AF37] bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-lg border border-[#D4AF37]/30">
+              {{ getSelectedCategoryName() }}
+            </span>
+
+            <span class="absolute top-3 right-3 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-lg border border-emerald-500/20">
+              In Stock ({{ stock() || 1 }})
+            </span>
+
+            <img
+              [src]="imagePreview() || imageUrl()"
+              [alt]="name() || 'Product Preview'"
+              class="h-full w-full object-contain p-2"
+            />
+          </div>
+
+          <div class="space-y-1">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#D4AF37]">
+              {{ getSelectedBrandName() }}
+            </span>
+            <h3 class="text-base font-bold text-white truncate">
+              {{ name() || 'Untitled Creation' }}
+            </h3>
+            <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+              {{ description() || 'No description provided yet.' }}
+            </p>
+          </div>
+
+          <div class="h-px bg-white/5 my-4"></div>
+
+          <div class="flex items-center justify-between mt-auto">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Investment</span>
+              <p class="text-xl font-black text-white">
+                ${{ price() || 0 }}
+              </p>
+            </div>
+
+            <span class="px-4 py-2 rounded-xl text-xs font-bold text-black bg-[#D4AF37]">
+              Live Ready
+            </span>
+          </div>
+        </div>
       </div>
-    </form>
+    </div>
   </div>
 </div>

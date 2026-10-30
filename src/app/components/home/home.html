@@ -1,120 +1,180 @@
-<section class="w-full flex flex-col">
-  <div class="w-full flex flex-col items-center text-center gap-4 sm:gap-5 px-6 pt-32 pb-16 sm:pb-24 text-white bg-linear-to-r from-black via-gray-900 to-gray-950 border-b-3 border-[#D4AF37]">
-    <p class="px-5 py-2 text-center items-center border rounded-full border-gray-600 w-fit flex gap-2 text-xs sm:text-sm uppercase tracking-widest text-gray-300">
-      Exclusive 2026 Collection
-    </p>
-
-    <h1 class="font-extrabold text-3xl sm:text-6xl lg:text-7xl tracking-tight">
-      Discover Luxury
-      <span class="block text-[#D4AF37] mt-2">That Lasts Forever</span>
-    </h1>
-
-    <p class="text-gray-400 max-w-2xl text-sm sm:text-base leading-relaxed">
-      Curated premium products that combine timeless elegance with modern sophistication. Experience quality that speaks for itself.
-    </p>
-
-    <div class="w-full flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mt-6">
-      <button
-        (click)="scrollToProducts()"
-        class="border px-8 py-4 shadow-2xl border-gray-700 rounded-2xl bg-[#D4AF37] text-black font-bold hover:scale-105 transition-all duration-300 w-full sm:w-auto cursor-pointer text-sm"
-      >
-        Explore Collection
-      </button>
-
-      <a
-        routerLink="/products"
-        class="border px-8 py-4 shadow-2xl border-gray-700 rounded-2xl hover:text-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300 w-full sm:w-auto text-sm font-semibold"
-      >
-        All Products
-      </a>
-    </div>
-
-    <div class="mt-12 w-3/4 sm:w-1/2 h-px bg-gray-800"></div>
-
-    <div class="flex flex-col sm:flex-row justify-between items-center mt-10 gap-6 sm:gap-0 w-full max-w-3xl">
-      <div class="flex flex-col gap-1 items-center sm:border-r sm:border-gray-800 sm:pr-12 pb-4 sm:pb-0 w-full sm:w-auto">
-        <p class="text-3xl font-extrabold text-white">+10K</p>
-        <p class="text-gray-400 text-xs">Happy Customers</p>
+<!-- Toast Notification -->
+@if (addedToast(); as msg) {
+  <div class="fixed bottom-6 right-6 z-50 animate-bounce-short">
+    <div class="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#182032] to-[#0D121F] border border-[#D4AF37]/50 shadow-[0_10px_30px_rgba(212,175,55,0.25)] flex items-center gap-3 text-xs text-white">
+      <div class="w-6 h-6 rounded-full bg-[#D4AF37] text-black flex items-center justify-center font-bold text-[10px]">
+        <fa-icon [icon]="faCheck"></fa-icon>
       </div>
-
-      <div class="flex flex-col gap-1 items-center sm:mx-8 pb-4 sm:pb-0 w-full sm:w-auto">
-        <p class="text-3xl font-extrabold text-[#D4AF37]">+500</p>
-        <p class="text-gray-400 text-xs">Premium Products</p>
-      </div>
-
-      <div class="flex flex-col gap-1 items-center sm:border-l sm:border-gray-800 sm:pl-12 w-full sm:w-auto">
-        <p class="text-3xl font-extrabold text-white">4.9 ★</p>
-        <p class="text-gray-400 text-xs">Average Rating</p>
-      </div>
+      <span class="font-medium">{{ msg }}</span>
     </div>
   </div>
+}
 
-  <div id="collection" class="w-full bg-gray-50 py-16 px-4 sm:px-8">
-    <div class="max-w-7xl mx-auto flex flex-col items-center">
-      <div class="text-center mb-8">
-        <span class="text-xs uppercase font-bold tracking-widest text-[#D4AF37] bg-yellow-50 px-3 py-1 rounded-full border border-yellow-200">
-          Featured Categories
+<div class="w-full flex flex-col bg-[#0B0F19] text-white">
+  <!-- Hero Section -->
+  <section class="relative w-full pt-36 pb-20 sm:pb-28 px-6 sm:px-12 overflow-hidden border-b border-white/5">
+    <!-- Ambient Radial Glows -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-[#D4AF37]/15 via-amber-500/5 to-transparent blur-[140px] rounded-full pointer-events-none"></div>
+    <div class="absolute -top-24 right-10 w-72 h-72 bg-amber-400/10 blur-[100px] rounded-full pointer-events-none"></div>
+
+    <div class="max-w-5xl mx-auto flex flex-col items-center text-center relative z-10">
+      <!-- Top Badge -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-amber-300 shadow-sm backdrop-blur-md">
+        <fa-icon [icon]="faCrown" class="text-[#D4AF37] text-xs"></fa-icon>
+        <span>The 2026 High Repertoire Collection</span>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mt-6 leading-[1.1]">
+        Curated Elegance.
+        <span class="block luxury-text-gradient mt-2 font-black">Timeless Prestige.</span>
+      </h1>
+
+      <!-- Description -->
+      <p class="text-slate-400 mt-5 max-w-2xl text-xs sm:text-base leading-relaxed font-light">
+        Experience haute horlogerie, artisanal leather goods, and refined technological marvels. Each piece is authentic, vetted, and backed by international provenance.
+      </p>
+
+      <!-- CTA Buttons -->
+      <div class="flex flex-col sm:flex-row items-center gap-4 mt-10 w-full sm:w-auto">
+        <button
+          (click)="scrollToProducts()"
+          class="w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-wider text-black bg-gradient-to-r from-[#FFE082] via-[#D4AF37] to-[#B8952B] hover:brightness-110 active:scale-95 transition shadow-[0_0_30px_rgba(212,175,55,0.35)] flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span>Explore Collection</span>
+          <fa-icon [icon]="faArrowRight" class="text-xs"></fa-icon>
+        </button>
+
+        <a
+          routerLink="/products"
+          class="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-xs uppercase tracking-wider text-slate-200 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition flex items-center justify-center"
+        >
+          All Luxury Catalog
+        </a>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="mt-16 pt-10 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-6 w-full max-w-4xl">
+        <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center">
+          <p class="text-2xl sm:text-3xl font-black text-white">+10,000</p>
+          <p class="text-[11px] text-slate-400 uppercase tracking-wider mt-1">Private Collectors</p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center">
+          <p class="text-2xl sm:text-3xl font-black luxury-text-gradient">100%</p>
+          <p class="text-[11px] text-slate-400 uppercase tracking-wider mt-1">Verified Authentic</p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center">
+          <p class="text-2xl sm:text-3xl font-black text-white">4.9 ★</p>
+          <p class="text-[11px] text-slate-400 uppercase tracking-wider mt-1">Global Rating</p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center">
+          <p class="text-2xl sm:text-3xl font-black text-[#D4AF37]">$0</p>
+          <p class="text-[11px] text-slate-400 uppercase tracking-wider mt-1">Insured VIP Delivery</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Luxury Brand Strip -->
+  <section class="w-full py-8 bg-[#0D1322] border-b border-white/5 px-6">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-around gap-8 text-center opacity-70 hover:opacity-100 transition-opacity">
+      @for (brand of brands; track brand.name) {
+        <div class="flex flex-col items-center">
+          <span class="text-sm sm:text-base font-extrabold tracking-widest text-slate-200 uppercase">{{ brand.name }}</span>
+          <span class="text-[9px] text-[#D4AF37] font-semibold tracking-wider">{{ brand.tag }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Featured Collection Grid Section -->
+  <section id="collection" class="w-full py-20 px-4 sm:px-8 max-w-7xl mx-auto">
+    <div class="flex flex-col items-center text-center mb-10">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/25 text-[11px] font-bold text-[#D4AF37] uppercase tracking-widest">
+        <fa-icon [icon]="faCrown" class="text-[10px]"></fa-icon>
+        <span>Curated Catalog</span>
+      </div>
+
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight text-white mt-3">
+        Discover By Category
+      </h2>
+      <p class="text-xs sm:text-sm text-slate-400 mt-2 max-w-md">
+        Select a fine category to explore certified luxury masterpieces directly from the vaults.
+      </p>
+
+      <!-- Category Filter Tabs -->
+      <div class="flex flex-wrap items-center justify-center gap-2 mt-8 w-full max-w-2xl">
+        <button
+          (click)="selectCategory(null)"
+          [class]="selectedCategoryId() === null
+            ? 'bg-[#D4AF37] text-black font-extrabold shadow-lg shadow-[#D4AF37]/25 border-[#D4AF37]'
+            : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border-white/10'"
+          class="px-5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer"
+        >
+          All Items
+        </button>
+
+        @for (cat of categories(); track cat.id) {
+          <button
+            (click)="selectCategory(cat._id || cat.id)"
+            [class]="selectedCategoryId() === (cat._id || cat.id)
+              ? 'bg-[#D4AF37] text-black font-extrabold shadow-lg shadow-[#D4AF37]/25 border-[#D4AF37]'
+              : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border-white/10'"
+            class="px-5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer"
+          >
+            {{ cat.name }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Product Grid Component -->
+    <app-product-list
+      [products]="products()"
+      [isLoading]="isLoading()"
+      (addToCart)="handleAddToCart($event)"
+    ></app-product-list>
+
+    <div class="mt-12 text-center">
+      <a
+        routerLink="/products"
+        class="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider text-white bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#D4AF37]/50 transition"
+      >
+        <span>View Complete Catalogue</span>
+        <fa-icon [icon]="faArrowRight"></fa-icon>
+      </a>
+    </div>
+  </section>
+
+  <!-- The Luxury Guarantee / Features Section -->
+  <section class="w-full py-20 px-6 sm:px-12 bg-gradient-to-b from-[#0B0F19] via-[#0E1526] to-[#0B0F19] border-t border-white/5">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-14">
+        <span class="text-xs uppercase font-extrabold tracking-widest text-[#D4AF37]">
+          The Gold Standard
         </span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mt-3">
-          Explore by Category
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-2">
+          Why Discerning Clients Choose LUXURY
         </h2>
-        <p class="text-gray-500 text-sm mt-2 max-w-lg">
-          Select a category to browse our curated selections directly
+        <p class="text-xs sm:text-sm text-slate-400 mt-2 max-w-lg mx-auto">
+          Unrivaled authenticity standards, white-glove logistics, and bespoke client confidentiality.
         </p>
       </div>
 
-      @if (categories.length > 0) {
-        <div class="flex flex-wrap justify-center gap-2 sm:gap-3 mb-10 w-full max-w-3xl">
-          <button
-            (click)="selectCategory(null)"
-            [class]="selectedCategoryId === null ? 'bg-black text-[#D4AF37] border-black shadow-md' : 'bg-white text-gray-700 border-gray-200 hover:border-[#D4AF37]'"
-            class="px-5 py-2 rounded-full text-xs sm:text-sm font-semibold border transition cursor-pointer"
-          >
-            All Products
-          </button>
-          @for (cat of categories; track cat.id) {
-            <button
-              (click)="selectCategory(cat.id)"
-              [class]="selectedCategoryId === cat.id ? 'bg-black text-[#D4AF37] border-black shadow-md' : 'bg-white text-gray-700 border-gray-200 hover:border-[#D4AF37]'"
-              class="px-5 py-2 rounded-full text-xs sm:text-sm font-semibold border transition cursor-pointer"
-            >
-              {{ cat.name }}
-            </button>
-          }
-        </div>
-      }
-
-      <div class="w-full">
-        <app-product-list
-          [products]="products"
-          [isLoading]="isLoading"
-          (addToCart)="handleAddToCart($event)"
-        ></app-product-list>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        @for (item of whyChoose; track item.head) {
+          <div class="p-6 rounded-3xl bg-[#121929]/70 border border-white/5 hover:border-[#D4AF37]/40 hover:bg-[#161F33] transition-all duration-300 group">
+            <div class="w-12 h-12 rounded-2xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#D4AF37] flex items-center justify-center text-lg mb-5 group-hover:scale-110 transition-transform">
+              <fa-icon [icon]="item.icon"></fa-icon>
+            </div>
+            <h3 class="text-base font-bold text-white mb-2">{{ item.head }}</h3>
+            <p class="text-xs text-slate-400 leading-relaxed font-light">{{ item.info }}</p>
+          </div>
+        }
       </div>
     </div>
-  </div>
-
-  <div class="w-full flex flex-col items-center gap-14 py-20 px-6 bg-white border-t border-gray-200">
-    <div class="flex flex-col items-center gap-2 text-center">
-      <span class="text-xs uppercase font-bold tracking-widest text-[#D4AF37]">Excellence</span>
-      <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900">
-        Why Choose <span class="text-[#D4AF37]">Luxury</span>
-      </h2>
-      <p class="text-gray-600 text-sm max-w-md">
-        Experience shopping excellence with our commitment to quality, authenticity and service
-      </p>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl">
-      @for (item of whyChoose; track item.head) {
-        <div class="flex flex-col gap-4 rounded-2xl transition-all duration-300 items-center hover:border-[#D4AF37] hover:shadow-xl p-6 border border-gray-200 bg-gray-50 text-center">
-          <div class="flex items-center p-5 rounded-2xl justify-center bg-[#D4AF37] text-black text-xl">
-            <fa-icon [icon]="item.icon"></fa-icon>
-          </div>
-          <h3 class="text-lg font-bold text-gray-900">{{ item.head }}</h3>
-          <p class="text-gray-600 text-xs leading-relaxed">{{ item.info }}</p>
-        </div>
-      }
-    </div>
-  </div>
-</section>
+  </section>
+</div>

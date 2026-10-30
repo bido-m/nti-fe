@@ -1,56 +1,324 @@
-<section class="min-h-screen flex items-center justify-center bg-gray-50 py-24 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-    <div class="text-center">
-      <span class="text-xs uppercase tracking-widest text-[#D4AF37] font-semibold">Join Luxury</span>
-      <h2 class="mt-2 text-3xl font-extrabold text-gray-900">Create an account</h2>
-      <p class="mt-2 text-sm text-gray-500">
-        Already have an account? <a routerLink="/login" class="font-medium text-[#D4AF37] hover:underline">Sign in</a>
-      </p>
+<div class="min-h-screen bg-[#0B0F19] text-white pt-28 pb-20 px-4 flex items-center justify-center relative overflow-hidden">
+  <!-- Subtle Ambient Glow -->
+  <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-[#D4AF37]/10 blur-[140px] rounded-full pointer-events-none"></div>
+
+  <div class="w-full max-w-xl rounded-3xl bg-[#121929]/80 border border-white/10 backdrop-blur-2xl p-7 sm:p-10 shadow-2xl relative z-10">
+    <!-- Header with 1-Click Fill Button -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#FFE484] to-[#B8952B] text-black flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+          <fa-icon [icon]="faCrown" class="text-sm"></fa-icon>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white">VIP Membership</h1>
+          <p class="text-[11px] text-slate-400">Join the international curated luxury collector vault.</p>
+        </div>
+      </div>
+
+      <!-- Quick Autofill for Testing -->
+      <button
+        type="button"
+        (click)="autofillApplicant()"
+        class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[#D4AF37] text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+        title="Fill with valid sample data"
+      >
+        <fa-icon [icon]="faWandMagicSparkles"></fa-icon>
+        <span class="hidden sm:inline">Autofill Demo</span>
+      </button>
     </div>
 
-    @if (errorMessage) {
-      <div class="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm text-center">{{ errorMessage }}</div>
+    <!-- Friendly Error Alert -->
+    @if (errorMessage()) {
+      <div class="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex flex-col gap-1.5 animate-shake">
+        <div class="flex items-center gap-2 font-bold text-rose-200">
+          <fa-icon [icon]="faCircleExclamation" class="text-base text-rose-400"></fa-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+        @if (rawErrorDetails()) {
+          <p class="text-[10px] text-rose-400/80 font-mono pl-6 break-words">
+            Server response: {{ rawErrorDetails() }}
+          </p>
+        }
+      </div>
     }
-    @if (successMessage) {
-      <div class="p-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm text-center">{{ successMessage }}</div>
+
+    <!-- Success Alert -->
+    @if (successMessage()) {
+      <div class="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2.5">
+        <fa-icon [icon]="faCircleCheck" class="text-lg text-emerald-400"></fa-icon>
+        <span class="font-bold">{{ successMessage() }}</span>
+      </div>
     }
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="mt-8 space-y-5">
+    <!-- Reactive Form -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+      <!-- Full Name -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-        <input type="text" formControlName="name" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#D4AF37] focus:outline-none transition" placeholder="John Doe" />
-        @if (name?.touched && name?.errors?.['required']) {
-          <p class="text-xs text-red-500 mt-1">الاسم مطلوب</p>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
+          Full Name <span class="text-[#D4AF37]">*</span>
+        </label>
+        <div class="relative flex items-center">
+          <div class="absolute left-3.5 text-slate-500">
+            <fa-icon [icon]="faUser" class="text-xs"></fa-icon>
+          </div>
+          <input
+            type="text"
+            formControlName="name"
+            placeholder="Lord / Lady Hamilton"
+            [class.border-rose-500]="name?.touched && name?.invalid"
+            [class.border-emerald-500]="name?.touched && name?.valid"
+            class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:border-[#D4AF37] text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none transition"
+          />
+          @if (name?.touched && name?.valid) {
+            <div class="absolute right-3.5 text-emerald-400 text-xs">
+              <fa-icon [icon]="faCheck"></fa-icon>
+            </div>
+          }
+        </div>
+        @if (name?.touched && name?.invalid) {
+          <p class="text-[11px] text-rose-400 mt-1 flex items-center gap-1">
+            <fa-icon [icon]="faCircleExclamation" class="text-[10px]"></fa-icon>
+            <span>Name is required (at least 2 characters).</span>
+          </p>
         }
       </div>
 
+      <!-- Email Address -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-        <input type="email" formControlName="email" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#D4AF37] focus:outline-none transition" placeholder="you@example.com" />
-        @if (email?.touched && email?.errors?.['required']) {
-          <p class="text-xs text-red-500 mt-1">البريد الإلكتروني مطلوب</p>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
+          Email Address <span class="text-[#D4AF37]">*</span>
+        </label>
+        <div class="relative flex items-center">
+          <div class="absolute left-3.5 text-slate-500">
+            <fa-icon [icon]="faEnvelope" class="text-xs"></fa-icon>
+          </div>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="collector@luxury.com"
+            [class.border-rose-500]="email?.touched && email?.invalid"
+            [class.border-emerald-500]="email?.touched && email?.valid"
+            class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:border-[#D4AF37] text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none transition"
+          />
+          @if (email?.touched && email?.valid) {
+            <div class="absolute right-3.5 text-emerald-400 text-xs">
+              <fa-icon [icon]="faCheck"></fa-icon>
+            </div>
+          }
+        </div>
+        @if (email?.touched && email?.invalid) {
+          <p class="text-[11px] text-rose-400 mt-1 flex items-center gap-1">
+            <fa-icon [icon]="faCircleExclamation" class="text-[10px]"></fa-icon>
+            <span>Please enter a valid email address (e.g. name&#64;domain.com).</span>
+          </p>
         }
       </div>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-        <input type="password" formControlName="password" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#D4AF37] focus:outline-none transition" placeholder="••••••••" />
-        @if (password?.touched && password?.errors?.['minlength']) {
-          <p class="text-xs text-red-500 mt-1">كلمة المرور يجب ألا تقل عن 6 أحرف</p>
-        }
+      <!-- Phone & Gender Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Phone Number -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
+            Direct Phone <span class="text-[#D4AF37]">*</span>
+          </label>
+          <div class="relative flex items-center">
+            <div class="absolute left-3.5 text-slate-500">
+              <fa-icon [icon]="faPhone" class="text-xs"></fa-icon>
+            </div>
+            <input
+              type="tel"
+              formControlName="phone"
+              placeholder="01012345678"
+              [class.border-rose-500]="phone?.touched && phone?.invalid"
+              [class.border-emerald-500]="phone?.touched && phone?.valid"
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:border-[#D4AF37] text-white placeholder-slate-500 text-xs focus:outline-none transition"
+            />
+          </div>
+          @if (phone?.touched && phone?.invalid) {
+            <p class="text-[10px] text-rose-400 mt-1">Please enter a valid phone number.</p>
+          }
+        </div>
+
+        <!-- Gender -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
+            Gender / Title
+          </label>
+          <div class="relative flex items-center">
+            <div class="absolute left-3.5 text-slate-500">
+              <fa-icon [icon]="faVenusMars" class="text-xs"></fa-icon>
+            </div>
+            <select
+              formControlName="gender"
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0D1322] border border-white/10 focus:border-[#D4AF37] text-white text-xs focus:outline-none cursor-pointer"
+            >
+              <option value="male">Male / Gentleman</option>
+              <option value="female">Female / Lady</option>
+              <option value="not specified">Prefer not to say</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-        <input type="password" formControlName="confirmPassword" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#D4AF37] focus:outline-none transition" placeholder="••••••••" />
-        @if (registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched) {
-          <p class="text-xs text-red-500 mt-1">كلمات المرور غير متطابقة</p>
-        }
+      <!-- Address Breakdown Row: City & Street (Fixes Embedded Address Issue) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- City -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
+            City <span class="text-[#D4AF37]">*</span>
+          </label>
+          <div class="relative flex items-center">
+            <div class="absolute left-3.5 text-slate-500">
+              <fa-icon [icon]="faLocationDot" class="text-xs"></fa-icon>
+            </div>
+            <input
+              type="text"
+              formControlName="city"
+              placeholder="e.g. Cairo"
+              [class.border-rose-500]="city?.touched && city?.invalid"
+              [class.border-emerald-500]="city?.touched && city?.valid"
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:border-[#D4AF37] text-white placeholder-slate-500 text-xs focus:outline-none transition"
+            />
+          </div>
+          @if (city?.touched && city?.invalid) {
+            <p class="text-[10px] text-rose-400 mt-1">City is required.</p>
+          }
+        </div>
+
+        <!-- Street / Area -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
+            Street & District <span class="text-[#D4AF37]">*</span>
+          </label>
+          <div class="relative flex items-center">
+            <div class="absolute left-3.5 text-slate-500">
+              <fa-icon [icon]="faBuilding" class="text-xs"></fa-icon>
+            </div>
+            <input
+              type="text"
+              formControlName="street"
+              placeholder="e.g. 15 El-Tahrir Square"
+              [class.border-rose-500]="street?.touched && street?.invalid"
+              [class.border-emerald-500]="street?.touched && street?.valid"
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:border-[#D4AF37] text-white placeholder-slate-500 text-xs focus:outline-none transition"
+            />
+          </div>
+          @if (street?.touched && street?.invalid) {
+            <p class="text-[10px] text-rose-400 mt-1">Street is required.</p>
+          }
+        </div>
       </div>
 
-      <button type="submit" [disabled]="isLoading" class="w-full flex justify-center py-3.5 px-4 rounded-xl text-sm font-semibold text-black bg-[#D4AF37] hover:bg-[#b8952b] transition disabled:opacity-50 cursor-pointer shadow-md">
-        @if (isLoading) { <span>جاري الإنشاء...</span> } @else { <span>Create Account</span> }
+      <!-- Password & Confirm Password Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Password -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
+            Security Password <span class="text-[#D4AF37]">*</span>
+          </label>
+          <div class="relative flex items-center">
+            <div class="absolute left-3.5 text-slate-500">
+              <fa-icon [icon]="faLock" class="text-xs"></fa-icon>
+            </div>
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Min 6 characters"
+              [class.border-rose-500]="password?.touched && password?.invalid"
+              class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:border-[#D4AF37] text-white placeholder-slate-500 text-xs focus:outline-none transition"
+            />
+            <button
+              type="button"
+              (click)="togglePasswordVisibility()"
+              class="absolute right-3 text-slate-400 hover:text-white transition cursor-pointer"
+              title="Toggle visibility"
+            >
+              <fa-icon [icon]="showPassword() ? faEyeSlash : faEye" class="text-xs"></fa-icon>
+            </button>
+          </div>
+
+          <!-- Password Strength Indicator -->
+          @if (password?.value) {
+            <div class="mt-1.5 space-y-1">
+              <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  [class]="getPasswordStrength().color"
+                  [style.width]="getPasswordStrength().width"
+                  class="h-full transition-all duration-300"
+                ></div>
+              </div>
+              <span class="text-[10px] text-slate-400">
+                Strength: <strong class="text-white">{{ getPasswordStrength().level }}</strong>
+              </span>
+            </div>
+          }
+          @if (password?.touched && password?.invalid) {
+            <p class="text-[10px] text-rose-400 mt-1">Password must be at least 6 characters.</p>
+          }
+        </div>
+
+        <!-- Confirm Password -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
+            Confirm Password <span class="text-[#D4AF37]">*</span>
+          </label>
+          <div class="relative flex items-center">
+            <div class="absolute left-3.5 text-slate-500">
+              <fa-icon [icon]="faLock" class="text-xs"></fa-icon>
+            </div>
+            <input
+              [type]="showConfirmPassword() ? 'text' : 'password'"
+              formControlName="confirmPassword"
+              placeholder="Re-enter password"
+              [class.border-rose-500]="(confirmPassword?.touched && confirmPassword?.invalid) || (registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched)"
+              [class.border-emerald-500]="confirmPassword?.value && !registerForm.errors?.['passwordMismatch']"
+              class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:border-[#D4AF37] text-white placeholder-slate-500 text-xs focus:outline-none transition"
+            />
+            <button
+              type="button"
+              (click)="toggleConfirmPasswordVisibility()"
+              class="absolute right-3 text-slate-400 hover:text-white transition cursor-pointer"
+              title="Toggle visibility"
+            >
+              <fa-icon [icon]="showConfirmPassword() ? faEyeSlash : faEye" class="text-xs"></fa-icon>
+            </button>
+          </div>
+
+          @if (registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched) {
+            <p class="text-[11px] text-rose-400 mt-1 flex items-center gap-1">
+              <fa-icon [icon]="faCircleExclamation" class="text-[10px]"></fa-icon>
+              <span>Passwords do not match.</span>
+            </p>
+          } @else if (confirmPassword?.value && !registerForm.errors?.['passwordMismatch']) {
+            <p class="text-[10px] text-emerald-400 mt-1 flex items-center gap-1">
+              <fa-icon [icon]="faCheck" class="text-[9px]"></fa-icon>
+              <span>Passwords match perfectly.</span>
+            </p>
+          }
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        [disabled]="isLoading()"
+        class="w-full mt-4 py-3.5 rounded-xl font-black text-xs uppercase tracking-wider text-black bg-gradient-to-r from-[#FFE082] via-[#D4AF37] to-[#B8952B] hover:brightness-110 active:scale-95 transition shadow-[0_0_20px_rgba(212,175,55,0.3)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+      >
+        @if (isLoading()) {
+          <div class="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+          <span>Validating & Securing Profile...</span>
+        } @else {
+          <span>Submit VIP Registration</span>
+          <fa-icon [icon]="faArrowRight"></fa-icon>
+        }
       </button>
     </form>
+
+    <div class="mt-6 text-center text-xs text-slate-400 border-t border-white/5 pt-4">
+      <span>Already an approved member?</span>
+      <a routerLink="/login" class="text-[#D4AF37] font-bold hover:underline ml-1">
+        Access Member Vault
+      </a>
+    </div>
   </div>
-</section>
+</div>

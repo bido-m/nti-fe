@@ -1,56 +1,151 @@
-<div class="w-full flex flex-col items-center text-center text-white px-4 pt-28 pb-16 hero-section">
-  <span class="px-4 py-1.5 border border-gray-600 rounded-full inline-flex items-center gap-2 text-xs uppercase tracking-wider text-gray-300">
-    Full Catalog
-  </span>
-  <h1 class="text-3xl sm:text-5xl font-black mt-4">
-    Our <span class="text-[#D4AF37]">Luxury Collection</span>
-  </h1>
-  <p class="text-gray-400 mt-2 max-w-xl text-xs sm:text-sm">
-    Explore our carefully curated selection of authentic premium products
-  </p>
-
-  <div class="mt-8 w-full max-w-2xl flex flex-col sm:flex-row gap-3 px-4">
-    <input
-      type="text"
-      [(ngModel)]="searchQuery"
-      (keyup.enter)="onSearch()"
-      placeholder="Search luxury products by title or description..."
-      class="flex-1 px-5 py-3 rounded-full text-black bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37] text-sm shadow-lg"
-    />
-    <button
-      (click)="onSearch()"
-      class="px-8 py-3 bg-[#D4AF37] text-black font-semibold rounded-full hover:bg-[#b8952b] transition text-sm cursor-pointer shadow-lg"
-    >
-      Search
-    </button>
+<!-- Added to Cart Toast Notification -->
+@if (addedToast(); as msg) {
+  <div class="fixed bottom-6 right-6 z-50 animate-bounce-short">
+    <div class="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#182032] to-[#0D121F] border border-[#D4AF37]/50 shadow-[0_10px_30px_rgba(212,175,55,0.25)] flex items-center gap-3 text-xs text-white">
+      <div class="w-6 h-6 rounded-full bg-[#D4AF37] text-black flex items-center justify-center font-bold text-[10px]">
+        <fa-icon [icon]="faCheck"></fa-icon>
+      </div>
+      <span class="font-medium">{{ msg }}</span>
+    </div>
   </div>
+}
 
-  @if (categories.length > 0) {
-    <div class="flex flex-wrap gap-2 justify-center mt-6">
+<!-- Catalog Header & Search Section -->
+<section class="w-full pt-32 pb-14 px-4 sm:px-8 relative overflow-hidden bg-gradient-to-b from-[#0B0F19] via-[#0E1526] to-[#0B0F19] border-b border-white/5">
+  <!-- Subtle Ambient Glow -->
+  <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#D4AF37]/10 blur-[130px] rounded-full pointer-events-none"></div>
+
+  <div class="max-w-5xl mx-auto flex flex-col items-center text-center relative z-10">
+    <!-- Luxury Badge -->
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold uppercase tracking-widest text-amber-300/90 shadow-sm">
+      <fa-icon [icon]="faCrown" class="text-[#D4AF37] text-[10px]"></fa-icon>
+      <span>Haute Horlogerie & Curated Catalog</span>
+    </div>
+
+    <!-- Title -->
+    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mt-5">
+      The <span class="luxury-text-gradient">Exclusive</span> Collection
+    </h1>
+    <p class="text-slate-400 mt-3 max-w-xl text-xs sm:text-sm leading-relaxed">
+      Browse our certified luxury repertoire. Every timepiece and accessory is verified by our master curators for absolute authenticity.
+    </p>
+
+    <!-- Search Bar -->
+    <div class="mt-8 w-full max-w-2xl">
+      <div class="relative flex items-center bg-white/5 hover:bg-white/10 focus-within:bg-[#121929] border border-white/10 focus-within:border-[#D4AF37]/60 rounded-2xl p-1.5 shadow-2xl transition-all">
+        <div class="pl-4 text-slate-400">
+          <fa-icon [icon]="faMagnifyingGlass" class="text-sm"></fa-icon>
+        </div>
+
+        <input
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          (keyup.enter)="onSearch()"
+          placeholder="Search by model, brand, or luxury reference..."
+          class="flex-1 px-3 py-2.5 bg-transparent text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none"
+        />
+
+        @if (searchQuery()) {
+          <button
+            (click)="clearSearch()"
+            class="p-2 text-slate-400 hover:text-white transition cursor-pointer"
+            title="Clear"
+          >
+            <fa-icon [icon]="faXmark" class="text-xs"></fa-icon>
+          </button>
+        }
+
+        <button
+          (click)="onSearch()"
+          class="px-5 sm:px-7 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-black bg-gradient-to-r from-[#FFE082] via-[#D4AF37] to-[#B8952B] hover:brightness-110 active:scale-95 transition shadow-md shadow-[#D4AF37]/20 cursor-pointer"
+        >
+          Search
+        </button>
+      </div>
+    </div>
+
+    <!-- Categories Filter Pills -->
+    <div class="flex flex-wrap items-center justify-center gap-2 mt-7 w-full max-w-3xl">
       <button
         (click)="selectCategory(null)"
-        [class]="selectedCategoryId === null ? 'bg-[#D4AF37] text-black font-bold' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
-        class="px-4 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer"
+        [class]="selectedCategoryId() === null
+          ? 'bg-[#D4AF37] text-black font-extrabold shadow-lg shadow-[#D4AF37]/25 border-[#D4AF37]'
+          : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border-white/10'"
+        class="px-4 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer"
       >
-        All
+        All Pieces
       </button>
-      @for (cat of categories; track cat.id) {
+
+      @for (cat of categories(); track cat.id) {
         <button
-          (click)="selectCategory(cat.id)"
-          [class]="selectedCategoryId === cat.id ? 'bg-[#D4AF37] text-black font-bold' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
-          class="px-4 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer"
+          (click)="selectCategory(cat._id || cat.id)"
+          [class]="selectedCategoryId() === (cat._id || cat.id)
+            ? 'bg-[#D4AF37] text-black font-extrabold shadow-lg shadow-[#D4AF37]/25 border-[#D4AF37]'
+            : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border-white/10'"
+          class="px-4 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5"
         >
-          {{ cat.name }}
+          <span>{{ cat.name }}</span>
         </button>
       }
     </div>
-  }
-</div>
+  </div>
+</section>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-8 py-8">
-  <app-product-list
-    [products]="products"
-    [isLoading]="isLoading"
-    (addToCart)="handleAddToCart($event)"
-  ></app-product-list>
-</div>
+<!-- Main Catalog Body -->
+<main class="max-w-7xl mx-auto px-4 sm:px-8 py-10">
+  <!-- Controls Bar (Count & Sorting) -->
+  <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b border-white/5">
+    <div class="flex items-center gap-3">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">
+        Showing
+        <span class="text-[#D4AF37] font-extrabold">{{ products().length }}</span>
+        Luxury Creations
+      </span>
+      @if (selectedCategoryId()) {
+        <span class="text-[10px] bg-white/5 border border-white/10 text-amber-300 px-2.5 py-0.5 rounded-full">
+          Filtered Category
+        </span>
+      }
+      @if (searchQuery()) {
+        <span class="text-[10px] bg-white/5 border border-white/10 text-slate-300 px-2.5 py-0.5 rounded-full">
+          "{{ searchQuery() }}"
+        </span>
+      }
+    </div>
+
+    <!-- Sorting Dropdown -->
+    <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+      <div class="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs">
+        <fa-icon [icon]="faSliders" class="text-[#D4AF37] text-[11px]"></fa-icon>
+        <span class="text-slate-400 font-medium">Sort:</span>
+        <select
+          (change)="onSortChange($event)"
+          class="bg-transparent text-white font-semibold focus:outline-none cursor-pointer text-xs"
+        >
+          <option value="default" class="bg-[#0B0F19] text-white">Featured</option>
+          <option value="price-low" class="bg-[#0B0F19] text-white">Price: Low to High</option>
+          <option value="price-high" class="bg-[#0B0F19] text-white">Price: High to Low</option>
+          <option value="name" class="bg-[#0B0F19] text-white">Alphabetical (A - Z)</option>
+        </select>
+      </div>
+
+      <button
+        (click)="loadProducts()"
+        class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
+        title="Refresh Products"
+      >
+        <fa-icon [icon]="faRotateRight" class="text-xs"></fa-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Product List Grid Component -->
+  <div class="mt-6">
+    <app-product-list
+      [products]="products()"
+      [isLoading]="isLoading()"
+      (addToCart)="handleAddToCart($event)"
+    ></app-product-list>
+  </div>
+</main>

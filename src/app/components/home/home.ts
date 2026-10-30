@@ -1,13 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
-  faWandMagicSparkles,
+  faCrown,
   faAward,
   faRotate,
   faHeadphones,
-  faArrowRight
+  faArrowRight,
+  faShieldHalved,
+  faGem,
+  faCheck
 } from '@fortawesome/free-solid-svg-icons';
 import { ProductList } from '../product-list/product-list';
 import { ApiService, Category, Product } from '../../Service/api';
@@ -20,37 +23,51 @@ import { ApiService, Category, Product } from '../../Service/api';
   templateUrl: './home.html',
 })
 export class Home implements OnInit {
-  categories: Category[] = [];
-  products: Product[] = [];
-  selectedCategoryId: number | null = null;
-  isLoading = true;
-
+  faCrown = faCrown;
   faArrowRight = faArrowRight;
+  faGem = faGem;
+  faCheck = faCheck;
+
+  // Zoneless Reactivity using Signals
+  categories = signal<Category[]>([]);
+  products = signal<Product[]>([]);
+  selectedCategoryId = signal<string | number | null>(null);
+  isLoading = signal<boolean>(true);
+  addedToast = signal<string | null>(null);
 
   whyChoose = [
     {
-      head: 'Premium Quality',
-      icon: faWandMagicSparkles,
-      info: 'Handpicked products that meet the highest standards of excellence'
+      head: 'Masterpiece Quality',
+      icon: faGem,
+      info: 'Handpicked products that meet the highest standards of timeless excellence and artisanship.'
     },
     {
-      head: 'Certified Products',
+      head: '100% Certified Genuine',
       icon: faAward,
-      info: 'All items are verified and come with authenticity guarantee'
+      info: 'Every individual piece is inspected by certified specialists and backed with cryptographic proof.'
     },
     {
-      head: 'Easy Returns',
+      head: 'White Glove Returns',
       icon: faRotate,
-      info: '30-day hassle-free returns with no questions asked policy'
+      info: '30-day effortless returns with complimentary insured courier pickup straight from your door.'
     },
     {
-      head: '24/7 Support',
+      head: '24/7 Private Concierge',
       icon: faHeadphones,
-      info: 'Our dedicated team is always ready to assist you anytime'
+      info: 'Our dedicated VIP advisory team is always available for personal consultations and custom orders.'
     }
   ];
 
-  constructor(private apiService: ApiService) {}
+  brands = [
+    { name: 'Apple', tag: 'Titanium Series' },
+    { name: 'Rolex', tag: 'Geneva Horlogerie' },
+    { name: 'Patek Philippe', tag: 'Complications' },
+    { name: 'Audemars Piguet', tag: 'Royal Oak' },
+    { name: 'Cartier', tag: 'High Jewelry' }
+  ];
+
+  private apiService = inject(ApiService);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.loadCategories();
@@ -60,31 +77,46 @@ export class Home implements OnInit {
   loadCategories(): void {
     this.apiService.getCategories().subscribe({
       next: (cats) => {
-        this.categories = cats;
-      }
+        this.categories.set(cats);
+        this.cdr.markForCheck();
+      },
+      error: () => this.cdr.markForCheck()
     });
   }
 
   loadProducts(): void {
-    this.isLoading = true;
-    this.apiService.getProducts(this.selectedCategoryId || undefined).subscribe({
+    this.isLoading.set(true);
+    this.cdr.markForCheck();
+
+    const catId = this.selectedCategoryId() || undefined;
+    this.apiService.getProducts(catId).subscribe({
       next: (prods) => {
-        this.products = prods;
-        this.isLoading = false;
+        this.products.set(prods);
+        this.isLoading.set(false);
+        this.cdr.markForCheck();
       },
       error: () => {
-        this.isLoading = false;
+        this.products.set([]);
+        this.isLoading.set(false);
+        this.cdr.markForCheck();
       }
     });
   }
 
-  selectCategory(id: number | null): void {
-    this.selectedCategoryId = id;
+  selectCategory(id: string | number | null): void {
+    this.selectedCategoryId.set(id);
     this.loadProducts();
   }
 
   handleAddToCart(product: Product): void {
-    alert(`تمت إضافة "${product.title}" إلى السلة بنجاح!`);
+    this.apiService.addToCart(product, 1);
+    this.addedToast.set(`Added "${product.title}" to your luxury bag!`);
+    this.cdr.markForCheck();
+
+    setTimeout(() => {
+      this.addedToast.set(null);
+      this.cdr.markForCheck();
+    }, 2800);
   }
 
   scrollToProducts(): void {
