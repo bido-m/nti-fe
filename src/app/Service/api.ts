@@ -10,6 +10,7 @@ export interface Category {
   slug: string;
   image?: { secure_url?: string; public_id?: string } | string;
   icon?: string;
+  createdAt?: string;
 }
 
 export interface Subcategory {
@@ -28,11 +29,45 @@ export interface Brand {
   logo?: { secure_url?: string; public_id?: string } | string;
 }
 
+export interface Review {
+  _id: string;
+  rating: number;
+  comment: string;
+  product_id: string;
+  user_id?: {
+    _id: string;
+    name: string;
+    email?: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface OrderItem {
+  product_id: Product;
+  quantity: number;
+  price?: number;
+  _id?: string;
+}
+
+export interface Order {
+  _id: string;
+  id?: string;
+  user_id?: any;
+  products: OrderItem[];
+  totalPrice?: number;
+  totalOrderPrice?: number;
+  status: 'pending' | 'completed' | 'canceled' | string;
+  paymentMethod?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Product {
   _id?: string;
   id: string | number;
   name: string;
-  title: string; // compatibility alias
+  title: string;
   slug?: string;
   description?: string | null;
   price: number;
@@ -63,7 +98,7 @@ export interface CartItem {
 export class ApiService {
   private readonly baseUrl = 'https://nti-be.vercel.app';
 
-  // Reactive Cart Signal for immediate, zoneless UI updates
+  // Reactive Cart Signal for immediate UI updates
   public readonly cart = signal<CartItem[]>(this.getStoredCart());
   public readonly cartCount = computed(() =>
     this.cart().reduce((acc, item) => acc + item.quantity, 0)
@@ -78,19 +113,18 @@ export class ApiService {
   public cartCount$ = this.cart$.pipe(map(items => items.reduce((a, b) => a + b.quantity, 0)));
   public cartTotal$ = this.cart$.pipe(map(items => items.reduce((a, b) => a + (b.product.price * b.quantity), 0)));
 
-  // Fallback categories in case backend hasn't populated them yet
+  // Fallback categories in case backend hasn't populated them
   private readonly fallbackCategories: Category[] = [
-    { id: 'cat_electronics', name: 'Electronics', slug: 'electronics', icon: 'mobile' },
-    { id: 'cat_watches', name: 'Luxury Watches', slug: 'watches', icon: 'gem' },
-    { id: 'cat_fashion', name: 'Haute Couture', slug: 'fashion', icon: 'shirt' },
-    { id: 'cat_accessories', name: 'Accessories', slug: 'accessories', icon: 'bag' }
+    { id: 'cat_electronics', name: 'Electronics & Audio', slug: 'electronics', icon: 'bolt' },
+    { id: 'cat_watches', name: 'Luxury Watches', slug: 'watches', icon: 'clock' },
+    { id: 'cat_fashion', name: 'Apparel & Lifestyle', slug: 'apparel', icon: 'shirt' },
+    { id: 'cat_accessories', name: 'Minimalist Accessories', slug: 'accessories', icon: 'bag' }
   ];
 
   constructor(
     private http: HttpClient,
     private authService: AuthService
   ) {
-    // Sync cart on startup if logged in
     if (this.authService.isLoggedIn()) {
       this.fetchBackendCart().subscribe();
     }
@@ -116,12 +150,48 @@ export class ApiService {
           id: c._id,
           name: c.name,
           slug: c.slug || c.name.toLowerCase().replace(/\s+/g, '-'),
-          image: c.image?.secure_url || c.image,
-          icon: 'gem'
+          image: c.image?.secure_url || c.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500',
+          icon: 'tag'
         }));
       }),
       catchError(() => of(this.fallbackCategories))
     );
+  }
+
+  getCategoryById(id: string): Observable<Category | null> {
+    return this.http.get<{ message?: string; data?: any }>(`${this.baseUrl}/category/${id}`).pipe(
+      map(res => {
+        const c = res.data || res;
+        return c ? {
+          _id: c._id,
+          id: c._id,
+          name: c.name,
+          slug: c.slug,
+          image: c.image?.secure_url || c.image
+        } : null;
+      }),
+      catchError(() => of(null))
+    );
+  }
+
+  createCategory(name: string, imageFile?: File): Observable<any> {
+    const headers = this.getAuthHeaders();
+    const formData = new FormData();
+    formData.append('name', name);
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+    return this.http.post<any>(`${this.baseUrl}/category`, formData, { headers });
+  }
+
+  updateCategory(id: string, name: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.put<any>(`${this.baseUrl}/category/${id}`, { name }, { headers });
+  }
+
+  deleteCategory(id: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.delete<any>(`${this.baseUrl}/category/${id}`, { headers });
   }
 
   // ================= SUBCATEGORIES =================
@@ -147,6 +217,26 @@ export class ApiService {
     );
   }
 
+  getSubcategoryById(id: string): Observable<Subcategory | null> {
+    return this.http.get<{ message?: string; data?: any }>(`${this.baseUrl}/subcategory/${id}`).pipe(
+      map(res => res.data || null),
+      catchError(() => of(null))
+    );
+  }
+
+  createSubcategory(name: string, category_id: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<any>(`${this.baseUrl}/subcategory`, { name, category_id }, { headers });
+  }
+
+  updateSubcategory(id: string, data: { name: string; slug?: string; category_id?: string }): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/subcategory/${id}`, data);
+  }
+
+  deleteSubcategory(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/subcategory/${id}`);
+  }
+
   // ================= BRANDS =================
   getBrands(): Observable<Brand[]> {
     return this.http.get<{ message?: string; count?: number; data?: any[] }>(`${this.baseUrl}/brand`).pipe(
@@ -157,11 +247,43 @@ export class ApiService {
           id: b._id,
           name: b.name,
           slug: b.slug,
-          logo: b.logo?.secure_url || b.logo
+          logo: b.logo?.secure_url || b.logo || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200'
         }));
       }),
       catchError(() => of([]))
     );
+  }
+
+  getBrandById(id: string): Observable<Brand | null> {
+    return this.http.get<{ message?: string; data?: any }>(`${this.baseUrl}/brand/${id}`).pipe(
+      map(res => res.data || null),
+      catchError(() => of(null))
+    );
+  }
+
+  createBrand(name: string, logoFile?: File): Observable<any> {
+    const headers = this.getAuthHeaders();
+    const formData = new FormData();
+    formData.append('name', name);
+    if (logoFile) {
+      formData.append('logo', logoFile);
+    }
+    return this.http.post<any>(`${this.baseUrl}/brand`, formData, { headers });
+  }
+
+  updateBrand(id: string, name: string, logoFile?: File): Observable<any> {
+    const headers = this.getAuthHeaders();
+    const formData = new FormData();
+    formData.append('name', name);
+    if (logoFile) {
+      formData.append('logo', logoFile);
+    }
+    return this.http.put<any>(`${this.baseUrl}/brand/${id}`, formData, { headers });
+  }
+
+  deleteBrand(id: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.delete<any>(`${this.baseUrl}/brand/${id}`, { headers });
   }
 
   // ================= PRODUCTS =================
@@ -174,14 +296,18 @@ export class ApiService {
     return this.http.get<{ message?: string; products?: any[] }>(`${this.baseUrl}/product`, { params }).pipe(
       map(res => {
         const rawList = res.products || (Array.isArray(res) ? res : []);
-        const mapped = rawList.map(p => this.mapToProduct(p));
+        let results = rawList.map(p => this.mapToProduct(p));
 
-        // In-memory filter fallback just in case backend query parameters vary
-        let results = mapped;
         if (categoryId) {
           results = results.filter(p => {
             const pCatId = p.category?._id || p.category_id;
             return String(pCatId) === String(categoryId);
+          });
+        }
+        if (brandId) {
+          results = results.filter(p => {
+            const pBrandId = p.brand?._id || p.brand_id;
+            return String(pBrandId) === String(brandId);
           });
         }
         if (searchQuery && searchQuery.trim()) {
@@ -192,7 +318,6 @@ export class ApiService {
           );
         }
 
-        // Merge any locally created mock products if available
         const local = this.getCustomProducts();
         if (local.length > 0) {
           results = [...local, ...results];
@@ -201,16 +326,8 @@ export class ApiService {
         return results;
       }),
       catchError((err) => {
-        console.warn('API Error fetching products from backend, falling back to cached:', err);
-        let list = this.getCustomProducts();
-        if (categoryId) {
-          list = list.filter(p => String(p.category_id) === String(categoryId));
-        }
-        if (searchQuery && searchQuery.trim()) {
-          const q = searchQuery.trim().toLowerCase();
-          list = list.filter(p => p.name.toLowerCase().includes(q));
-        }
-        return of(list);
+        console.warn('Backend product error, using cached:', err);
+        return of(this.getCustomProducts());
       })
     );
   }
@@ -262,6 +379,11 @@ export class ApiService {
     }
   }
 
+  updateProduct(id: string, data: { price?: number; stock?: number; description?: string }): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.put<any>(`${this.baseUrl}/product/${id}`, data, { headers });
+  }
+
   deleteProduct(id: string): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.delete<any>(`${this.baseUrl}/product/${id}`, { headers });
@@ -295,8 +417,10 @@ export class ApiService {
     const productIdStr = String(product._id || product.id);
     const existingIndex = items.findIndex(i => String(i.product._id || i.product.id) === productIdStr);
 
+    let newQuantity = quantity;
     if (existingIndex > -1) {
       items[existingIndex].quantity += quantity;
+      newQuantity = items[existingIndex].quantity;
       if (items[existingIndex].quantity <= 0) {
         items.splice(existingIndex, 1);
       }
@@ -306,12 +430,40 @@ export class ApiService {
 
     this.updateCartState(items);
 
-    // If logged in, sync with backend
     if (this.authService.isLoggedIn() && product._id) {
       const headers = this.getAuthHeaders();
-      this.http.post(`${this.baseUrl}/cart`, { product_id: product._id, quantity }, { headers })
-        .pipe(catchError(() => of(null)))
-        .subscribe();
+      if (existingIndex > -1 && newQuantity > 0) {
+        this.http.put(`${this.baseUrl}/cart/quantity`, { product_id: product._id, quantity: newQuantity }, { headers })
+          .pipe(catchError(() => of(null)))
+          .subscribe();
+      } else if (existingIndex === -1 && quantity > 0) {
+        this.http.post(`${this.baseUrl}/cart`, { product_id: product._id, quantity }, { headers })
+          .pipe(catchError(() => of(null)))
+          .subscribe();
+      }
+    }
+  }
+
+  updateQuantity(productId: string | number, quantity: number): void {
+    const idStr = String(productId);
+    const items = [...this.cart()];
+    const index = items.findIndex(i => String(i.product._id || i.product.id) === idStr);
+
+    if (index > -1) {
+      if (quantity <= 0) {
+        this.removeFromCart(productId);
+        return;
+      }
+      items[index].quantity = quantity;
+      this.updateCartState(items);
+
+      if (this.authService.isLoggedIn()) {
+        const headers = this.getAuthHeaders();
+        const pId = items[index].product._id || idStr;
+        this.http.put(`${this.baseUrl}/cart/quantity`, { product_id: pId, quantity }, { headers })
+          .pipe(catchError(() => of(null)))
+          .subscribe();
+      }
     }
   }
 
@@ -338,20 +490,75 @@ export class ApiService {
     }
   }
 
-  checkout(address?: string, phone?: string): Observable<any> {
+  // ================= ORDERS =================
+  createOrder(): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.post<any>(`${this.baseUrl}/order`, {
-      address: address || 'Cairo, Egypt',
-      phone: phone || '01000000000',
-      paymentMethod: 'cash'
-    }, { headers }).pipe(
+    return this.http.post<any>(`${this.baseUrl}/order`, {}, { headers }).pipe(
       tap(() => this.clearCart())
     );
   }
 
+  getMyOrders(): Observable<Order[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<{ message?: string; count?: number; data?: Order[] }>(`${this.baseUrl}/order/my-orders`, { headers }).pipe(
+      map(res => res.data || []),
+      catchError(() => of([]))
+    );
+  }
+
+  getOrderById(orderId: string): Observable<Order | null> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<{ message?: string; data?: Order }>(`${this.baseUrl}/order/${orderId}`, { headers }).pipe(
+      map(res => res.data || null),
+      catchError(() => of(null))
+    );
+  }
+
+  cancelOrder(orderId: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.put<any>(`${this.baseUrl}/order/${orderId}/cancel`, {}, { headers });
+  }
+
+  getAllOrders(): Observable<Order[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<{ message?: string; count?: number; data?: Order[] }>(`${this.baseUrl}/order`, { headers }).pipe(
+      map(res => res.data || []),
+      catchError(() => of([]))
+    );
+  }
+
+  updateOrderStatus(orderId: string, status: 'pending' | 'completed' | 'canceled'): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.put<any>(`${this.baseUrl}/order/${orderId}/status`, { status }, { headers });
+  }
+
+  // ================= REVIEWS =================
+  getProductReviews(productId: string): Observable<Review[]> {
+    return this.http.get<{ message?: string; count?: number; data?: Review[] }>(`${this.baseUrl}/review/product/${productId}`).pipe(
+      map(res => res.data || []),
+      catchError(() => of([]))
+    );
+  }
+
+  addReview(productId: string, rating: number, comment: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<any>(`${this.baseUrl}/review`, { product_id: productId, rating, comment }, { headers });
+  }
+
+  updateReview(reviewId: string, rating: number, comment: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.put<any>(`${this.baseUrl}/review/${reviewId}`, { rating, comment }, { headers });
+  }
+
+  deleteReview(reviewId: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.delete<any>(`${this.baseUrl}/review/${reviewId}`, { headers });
+  }
+
+  // ================= HELPER & STATE =================
   private updateCartState(items: CartItem[]): void {
     try {
-      localStorage.setItem('lux_cart', JSON.stringify(items));
+      localStorage.setItem('shopify_cart', JSON.stringify(items));
     } catch {}
     this.cart.set(items);
     this.cartSubject.next(items);
@@ -359,7 +566,7 @@ export class ApiService {
 
   private getStoredCart(): CartItem[] {
     try {
-      const stored = localStorage.getItem('lux_cart');
+      const stored = localStorage.getItem('shopify_cart') || localStorage.getItem('lux_cart');
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -368,7 +575,7 @@ export class ApiService {
 
   private getCustomProducts(): Product[] {
     try {
-      const stored = localStorage.getItem('lux_custom_products');
+      const stored = localStorage.getItem('shopify_custom_products') || localStorage.getItem('lux_custom_products');
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -385,7 +592,7 @@ export class ApiService {
 
     const categoryObj = item.category_id && typeof item.category_id === 'object'
       ? { _id: item.category_id._id, id: item.category_id._id, name: item.category_id.name, slug: item.category_id.slug }
-      : (item.category || { id: item.category_id || 1, name: 'Exclusive', slug: 'exclusive' });
+      : (item.category || { id: item.category_id || 1, name: 'General', slug: 'general' });
 
     const brandObj = item.brand_id && typeof item.brand_id === 'object'
       ? { _id: item.brand_id._id, id: item.brand_id._id, name: item.brand_id.name, logo: item.brand_id.logo }
@@ -403,7 +610,7 @@ export class ApiService {
       slug: item.slug || name.toLowerCase().replace(/\s+/g, '-'),
       description: item.description || '',
       price: Number(item.price) || 0,
-      stock: item.stock !== undefined ? Number(item.stock) : 15,
+      stock: item.stock !== undefined ? Number(item.stock) : 20,
       image_url: imageUrl,
       image: { secure_url: imageUrl, public_id: item.image?.public_id || '' },
       category_id: categoryObj._id || categoryObj.id,
@@ -414,13 +621,13 @@ export class ApiService {
       subcategory: subcategoryObj,
       colors: Array.isArray(item.colors) ? item.colors : [],
       sizes: Array.isArray(item.sizes) ? item.sizes : [],
-      rating: item.rating || { rate: 4.9, count: 32 },
+      rating: item.rating || { rate: 4.8, count: 24 },
       specifications: {
-        'Category': categoryObj.name || 'Exclusive',
-        'Brand': brandObj?.name || 'Luxury Edition',
+        'Category': categoryObj.name || 'General',
+        'Brand': brandObj?.name || 'Curated',
         'Authenticity': '100% Certified Genuine',
-        'Warranty': '2 Years International Official Guarantee',
-        'Delivery': 'Express Courier with White Glove Service'
+        'Warranty': '2 Years Official Warranty',
+        'Delivery': 'Express Insured Courier'
       }
     };
   }

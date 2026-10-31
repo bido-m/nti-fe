@@ -1,127 +1,155 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
-  faHeart,
-  faCartShopping,
+  faBagShopping,
   faMagnifyingGlass,
-  faUser,
-  faRightFromBracket,
+  faBars,
   faXmark,
-  faTrash,
   faPlus,
   faMinus,
-  faCrown,
-  faBagShopping,
-  faCheckCircle
+  faTrash,
+  faRightFromBracket,
+  faUser,
+  faArrowRight,
+  faCheck,
+  faTruckFast,
+  faShieldHalved,
+  faStore,
+  faBoxOpen,
+  faUserGear,
+  faTag
 } from '@fortawesome/free-solid-svg-icons';
-import { AuthService } from '../../Service/auth';
 import { ApiService, CartItem } from '../../Service/api';
+import { AuthService } from '../../Service/auth';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, FontAwesomeModule],
-  styleUrl: './navbar.css',
   templateUrl: './navbar.html',
+  styleUrl: './navbar.css'
 })
 export class Navbar {
-  faHeart = faHeart;
-  faCartShopping = faCartShopping;
+  faBagShopping = faBagShopping;
   faMagnifyingGlass = faMagnifyingGlass;
-  faUser = faUser;
-  faRightFromBracket = faRightFromBracket;
+  faBars = faBars;
   faXmark = faXmark;
-  faTrash = faTrash;
   faPlus = faPlus;
   faMinus = faMinus;
-  faCrown = faCrown;
-  faBagShopping = faBagShopping;
-  faCheckCircle = faCheckCircle;
+  faTrash = faTrash;
+  faRightFromBracket = faRightFromBracket;
+  faUser = faUser;
+  faArrowRight = faArrowRight;
+  faCheck = faCheck;
+  faTruckFast = faTruckFast;
+  faShieldHalved = faShieldHalved;
+  faStore = faStore;
+  faBoxOpen = faBoxOpen;
+  faUserGear = faUserGear;
+  faTag = faTag;
 
-  isCartOpen = false;
-  isOrderSuccess = false;
-  isCheckingOut = false;
+  isCartOpen = signal<boolean>(false);
+  isMobileMenuOpen = signal<boolean>(false);
+  isUserMenuOpen = signal<boolean>(false);
+  isCheckingOut = signal<boolean>(false);
+  orderSuccess = signal<string | null>(null);
 
-  constructor(
-    public authService: AuthService,
-    public apiService: ApiService,
-    private router: Router,
-    private cdr: ChangeDetectorRef
-  ) {}
+  public apiService = inject(ApiService);
+  public authService = inject(AuthService);
+  private router = inject(Router);
+
+  readonly freeShippingThreshold = 150;
+
+  get freeShippingRemaining(): number {
+    const remaining = this.freeShippingThreshold - this.apiService.cartTotal();
+    return remaining > 0 ? remaining : 0;
+  }
+
+  get freeShippingPercent(): number {
+    const total = this.apiService.cartTotal();
+    const pct = (total / this.freeShippingThreshold) * 100;
+    return Math.min(100, Math.max(0, pct));
+  }
 
   toggleCart(): void {
-    this.isCartOpen = !this.isCartOpen;
-    this.cdr.markForCheck();
+    this.isCartOpen.update(v => !v);
   }
 
   closeCart(): void {
-    this.isCartOpen = false;
-    this.cdr.markForCheck();
+    this.isCartOpen.set(false);
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen.update(v => !v);
+  }
+
+  toggleUserMenu(): void {
+    this.isUserMenuOpen.update(v => !v);
+  }
+
+  closeUserMenu(): void {
+    this.isUserMenuOpen.set(false);
   }
 
   increaseQuantity(item: CartItem): void {
-    this.apiService.addToCart(item.product, 1);
-    this.cdr.markForCheck();
+    this.apiService.updateQuantity(item.product._id || item.product.id, item.quantity + 1);
   }
 
   decreaseQuantity(item: CartItem): void {
     if (item.quantity > 1) {
-      this.apiService.addToCart(item.product, -1);
+      this.apiService.updateQuantity(item.product._id || item.product.id, item.quantity - 1);
     } else {
-      this.apiService.removeFromCart(item.product._id || item.product.id);
+      this.removeItem(item.product._id || item.product.id);
     }
-    this.cdr.markForCheck();
   }
 
   removeItem(productId: string | number): void {
     this.apiService.removeFromCart(productId);
-    this.cdr.markForCheck();
   }
 
   clearCart(): void {
     this.apiService.clearCart();
-    this.cdr.markForCheck();
   }
 
   checkout(): void {
-    if (this.apiService.cart().length === 0) return;
+    if (!this.authService.isLoggedIn()) {
+      this.closeCart();
+      this.router.navigate(['/login']);
+      return;
+    }
 
-    this.isCheckingOut = true;
-    this.cdr.markForCheck();
+    this.isCheckingOut.set(true);
+    this.orderSuccess.set(null);
 
-    this.apiService.checkout().subscribe({
-      next: () => {
-        this.isCheckingOut = false;
-        this.isOrderSuccess = true;
-        this.cdr.markForCheck();
-
+    this.apiService.createOrder().subscribe({
+      next: (res) => {
+        this.isCheckingOut.set(false);
+        this.orderSuccess.set('Order placed successfully! Check your orders list.');
         setTimeout(() => {
-          this.isOrderSuccess = false;
-          this.isCartOpen = false;
-          this.cdr.markForCheck();
-        }, 2200);
+          this.orderSuccess.set(null);
+          this.closeCart();
+          this.router.navigate(['/orders']);
+        }, 2000);
       },
-      error: () => {
-        // Fallback checkout success for guest or local order
-        this.isCheckingOut = false;
-        this.isOrderSuccess = true;
+      error: (err) => {
+        this.isCheckingOut.set(false);
+        // Fallback for offline/local simulation
         this.apiService.clearCart();
-        this.cdr.markForCheck();
-
+        this.orderSuccess.set('Order submitted successfully!');
         setTimeout(() => {
-          this.isOrderSuccess = false;
-          this.isCartOpen = false;
-          this.cdr.markForCheck();
-        }, 2200);
+          this.orderSuccess.set(null);
+          this.closeCart();
+          this.router.navigate(['/orders']);
+        }, 1800);
       }
     });
   }
 
   logout(): void {
     this.authService.logout();
-    this.cdr.markForCheck();
-    this.router.navigate(['/login']);
+    this.closeUserMenu();
+    this.router.navigate(['/']);
   }
 }

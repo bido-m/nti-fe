@@ -1,52 +1,74 @@
 import { Component, OnInit, signal, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
   faHeart,
-  faCartShopping,
+  faBagShopping,
   faAward,
   faRotate,
   faShieldHalved,
-  faCrown,
   faCheck,
   faTruckFast,
   faArrowLeft,
   faPlus,
   faMinus,
-  faStar
+  faStar,
+  faTrash,
+  faCommentDots,
+  faShareNodes,
+  faChevronDown,
+  faChevronUp
 } from '@fortawesome/free-solid-svg-icons';
-import { ApiService, Product } from '../../Service/api';
+import { ApiService, Product, Review } from '../../Service/api';
 import { AuthService } from '../../Service/auth';
 
 @Component({
   selector: 'app-product-details',
   standalone: true,
-  imports: [CommonModule, RouterLink, FontAwesomeModule],
+  imports: [CommonModule, FormsModule, RouterLink, FontAwesomeModule],
   styleUrl: './product-details.css',
   templateUrl: './product-details.html',
 })
 export class ProductDetails implements OnInit {
   faHeart = faHeart;
-  faCartShopping = faCartShopping;
+  faBagShopping = faBagShopping;
   faAward = faAward;
   faRotate = faRotate;
   faShieldHalved = faShieldHalved;
-  faCrown = faCrown;
   faCheck = faCheck;
   faTruckFast = faTruckFast;
   faArrowLeft = faArrowLeft;
   faPlus = faPlus;
   faMinus = faMinus;
   faStar = faStar;
+  faTrash = faTrash;
+  faCommentDots = faCommentDots;
+  faShareNodes = faShareNodes;
+  faChevronDown = faChevronDown;
+  faChevronUp = faChevronUp;
 
   product = signal<Product | null>(null);
   relatedProducts = signal<Product[]>([]);
+  reviews = signal<Review[]>([]);
   isLoading = signal<boolean>(true);
   quantity = signal<number>(1);
   addedAlert = signal<boolean>(false);
   selectedColor = signal<string | null>(null);
   selectedSize = signal<string | null>(null);
+
+  // Accordion Toggles
+  showSpecs = signal<boolean>(false);
+  showShipping = signal<boolean>(false);
+
+  // Review Form State
+  showReviewForm = signal<boolean>(false);
+  reviewRating = signal<number>(5);
+  reviewComment = signal<string>('');
+  isSubmittingReview = signal<boolean>(false);
+  reviewMessage = signal<string | null>(null);
+  reviewErrorMessage = signal<string | null>(null);
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -82,13 +104,16 @@ export class ProductDetails implements OnInit {
             this.selectedSize.set(prod.sizes[0]);
           }
 
+          // Fetch product reviews from API
+          const prodId = String(prod._id || prod.id);
+          this.loadReviews(prodId);
+
           const catId = prod.category?._id || prod.category_id;
           if (catId) {
             this.apiService.getProducts(catId).subscribe({
               next: (list) => {
-                const prodIdStr = String(prod._id || prod.id);
                 this.relatedProducts.set(
-                  list.filter(p => String(p._id || p.id) !== prodIdStr).slice(0, 4)
+                  list.filter(p => String(p._id || p.id) !== prodId).slice(0, 4)
                 );
                 this.cdr.markForCheck();
               }
@@ -100,6 +125,19 @@ export class ProductDetails implements OnInit {
       error: () => {
         this.product.set(null);
         this.isLoading.set(false);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  loadReviews(productId: string): void {
+    this.apiService.getProductReviews(productId).subscribe({
+      next: (revs) => {
+        this.reviews.set(revs);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.reviews.set([]);
         this.cdr.markForCheck();
       }
     });
@@ -144,7 +182,88 @@ export class ProductDetails implements OnInit {
     }, 2800);
   }
 
+  buyItNow(): void {
+    const p = this.product();
+    if (!p) return;
+
+    this.apiService.addToCart(p, this.quantity());
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/orders']);
+    } else {
+      this.router.navigate(['/login']);
+    }
+  }
+
+  toggleReviewForm(): void {
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.showReviewForm.update(v => !v);
+  }
+
+  setRating(score: number): void {
+    this.reviewRating.set(score);
+  }
+
+  submitReview(): void {
+    const p = this.product();
+    if (!p) return;
+
+    if (!this.reviewComment().trim()) {
+      this.reviewErrorMessage.set('Please write a short review comment.');
+      return;
+    }
+
+    this.isSubmittingReview.set(true);
+    this.reviewErrorMessage.set(null);
+    this.reviewMessage.set(null);
+    this.cdr.markForCheck();
+
+    const prodId = String(p._id || p.id);
+    this.apiService.addReview(prodId, this.reviewRating(), this.reviewComment().trim()).subscribe({
+      next: () => {
+        this.isSubmittingReview.set(false);
+        this.reviewMessage.set('Review submitted successfully! Thank you for your feedback.');
+        this.reviewComment.set('');
+        this.showReviewForm.set(false);
+        this.loadReviews(prodId);
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isSubmittingReview.set(false);
+        const msg = err?.error?.message || 'Could not submit review. Please try again.';
+        this.reviewErrorMessage.set(msg);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  deleteReview(reviewId: string): void {
+    if (!confirm('Are you sure you want to delete this review?')) return;
+
+    const p = this.product();
+    if (!p) return;
+
+    const prodId = String(p._id || p.id);
+    this.apiService.deleteReview(reviewId).subscribe({
+      next: () => {
+        this.loadReviews(prodId);
+      },
+      error: (err) => {
+        console.warn('Error deleting review', err);
+      }
+    });
+  }
+
   getSpecKeys(specs?: { [key: string]: string }): string[] {
     return specs ? Object.keys(specs) : [];
+  }
+
+  scrollToReviews(): void {
+    const el = document.getElementById('reviews-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 }

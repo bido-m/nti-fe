@@ -7,9 +7,9 @@ import {
   faSliders,
   faXmark,
   faRotateRight,
-  faCrown,
   faCheck,
-  faFilter
+  faFilter,
+  faStore
 } from '@fortawesome/free-solid-svg-icons';
 import { ProductList } from '../product-list/product-list';
 import { ApiService, Category, Brand, Product } from '../../Service/api';
@@ -26,11 +26,11 @@ export class Products implements OnInit {
   faSliders = faSliders;
   faXmark = faXmark;
   faRotateRight = faRotateRight;
-  faCrown = faCrown;
   faCheck = faCheck;
   faFilter = faFilter;
+  faStore = faStore;
 
-  // Modern Angular Signals (Zoneless Reactivity)
+  // Reactive State Signals
   products = signal<Product[]>([]);
   categories = signal<Category[]>([]);
   brands = signal<Brand[]>([]);
@@ -38,6 +38,7 @@ export class Products implements OnInit {
   selectedBrandId = signal<string | null>(null);
   searchQuery = signal<string>('');
   sortBy = signal<string>('default');
+  onlyInStock = signal<boolean>(false);
   isLoading = signal<boolean>(true);
   addedToast = signal<string | null>(null);
 
@@ -56,9 +57,7 @@ export class Products implements OnInit {
         this.categories.set(cats);
         this.cdr.markForCheck();
       },
-      error: () => {
-        this.cdr.markForCheck();
-      }
+      error: () => this.cdr.markForCheck()
     });
   }
 
@@ -68,9 +67,7 @@ export class Products implements OnInit {
         this.brands.set(brandsList);
         this.cdr.markForCheck();
       },
-      error: () => {
-        this.cdr.markForCheck();
-      }
+      error: () => this.cdr.markForCheck()
     });
   }
 
@@ -84,16 +81,21 @@ export class Products implements OnInit {
 
     this.apiService.getProducts(catId, query, brandId).subscribe({
       next: (prods) => {
-        let sorted = [...prods];
-        if (this.sortBy() === 'price-low') {
-          sorted.sort((a, b) => a.price - b.price);
-        } else if (this.sortBy() === 'price-high') {
-          sorted.sort((a, b) => b.price - a.price);
-        } else if (this.sortBy() === 'name') {
-          sorted.sort((a, b) => a.name.localeCompare(b.name));
+        let results = [...prods];
+
+        if (this.onlyInStock()) {
+          results = results.filter(p => p.stock > 0);
         }
 
-        this.products.set(sorted);
+        if (this.sortBy() === 'price-low') {
+          results.sort((a, b) => a.price - b.price);
+        } else if (this.sortBy() === 'price-high') {
+          results.sort((a, b) => b.price - a.price);
+        } else if (this.sortBy() === 'name') {
+          results.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        this.products.set(results);
         this.isLoading.set(false);
         this.cdr.markForCheck();
       },
@@ -115,12 +117,26 @@ export class Products implements OnInit {
     this.loadProducts();
   }
 
+  toggleInStock(): void {
+    this.onlyInStock.update(v => !v);
+    this.loadProducts();
+  }
+
   onSearch(): void {
     this.loadProducts();
   }
 
   clearSearch(): void {
     this.searchQuery.set('');
+    this.loadProducts();
+  }
+
+  resetAllFilters(): void {
+    this.selectedCategoryId.set(null);
+    this.selectedBrandId.set(null);
+    this.searchQuery.set('');
+    this.sortBy.set('default');
+    this.onlyInStock.set(false);
     this.loadProducts();
   }
 
@@ -132,7 +148,7 @@ export class Products implements OnInit {
 
   handleAddToCart(product: Product): void {
     this.apiService.addToCart(product, 1);
-    this.addedToast.set(`Added "${product.title}" to your luxury bag!`);
+    this.addedToast.set(`Added "${product.title}" to your cart!`);
     this.cdr.markForCheck();
 
     setTimeout(() => {

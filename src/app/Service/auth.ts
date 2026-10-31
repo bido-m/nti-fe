@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, signal, computed } from '@angular/core';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, of, map } from 'rxjs';
 
 export interface AddressItem {
   city: string;
@@ -15,9 +15,12 @@ export interface User {
   name: string;
   email: string;
   role: 'admin' | 'user' | string;
-  address?: AddressItem[] | any;
+  address?: AddressItem[];
   phone?: string;
   gender?: string;
+  profileImage?: { secure_url?: string; public_id?: string };
+  image_url?: string;
+  createdAt?: string;
   created_at?: string;
 }
 
@@ -35,27 +38,40 @@ export interface RegisterResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  // Using deployed production backend on Vercel
-  private readonly baseUrl = 'https://nti-be.vercel.app/auth';
+  private readonly baseUrl = 'https://nti-be.vercel.app';
 
-  // Reactive Angular Signals (Standard Zoneless Reactivity)
+  // Reactive Angular Signals (Zoneless Reactivity)
   public readonly currentUser = signal<User | null>(this.getStoredUser());
   public readonly token = signal<string | null>(this.getStoredToken());
   public readonly isLoggedIn = computed(() => !!this.currentUser());
   public readonly isAdmin = computed(() => this.currentUser()?.role === 'admin');
 
-  // Observable support for backward compatibility with async pipe
+  // Backward compatibility Observable
   private currentUserSubject = new BehaviorSubject<User | null>(this.currentUser());
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    if (this.getToken()) {
+      this.fetchProfile().subscribe();
+    }
+  }
+
+  public getAuthHeaders(): HttpHeaders {
+    const token = this.getToken();
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('x', token).set('authorization', `Bearer ${token}`);
+    }
+    return headers;
+  }
 
   signIn(email: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.baseUrl}/login`, { email, password }).pipe(
+    return this.http.post<LoginResponse>(`${this.baseUrl}/auth/login`, { email, password }).pipe(
       tap((res) => {
         if (res && res.token) {
           const user = this.decodeToken(res.token, email);
           this.setSession(res.token, user);
+          this.fetchProfile().subscribe();
         }
       })
     );
@@ -72,8 +88,8 @@ export class AuthService {
     postalCode?: string;
     address?: any;
     gender?: string;
+    role?: string;
   }): Observable<RegisterResponse> {
-    // Safely format address into Mongoose embedded array schema: [{ city, street, postalCode }]
     let formattedAddress: AddressItem[] = [];
 
     if (Array.isArray(userData.address) && userData.address.length > 0 && typeof userData.address[0] === 'object') {
@@ -88,13 +104,6 @@ export class AuthService {
         street: userData.street?.trim() || 'Main Street',
         postalCode: userData.postalCode?.trim() || '11511'
       }];
-    } else if (typeof userData.address === 'string' && userData.address.trim()) {
-      const parts = userData.address.split(',').map(s => s.trim());
-      formattedAddress = [{
-        city: parts[0] || 'Cairo',
-        street: parts[1] || 'Main Street',
-        postalCode: '11511'
-      }];
     } else {
       formattedAddress = [{
         city: 'Cairo',
@@ -108,16 +117,77 @@ export class AuthService {
       email: userData.email.trim().toLowerCase(),
       password: userData.password,
       confirmPassword: userData.confirmPassword || userData.password,
-      phone: userData.phone?.trim() || '01000000000',
+      phone: userData.phone?.trim() || '01012345678',
       address: formattedAddress,
-      gender: userData.gender || 'not specified'
+      gender: userData.gender || 'male',
+      role: userData.role || 'user'
     };
 
-    return this.http.post<RegisterResponse>(`${this.baseUrl}/register`, payload);
+    return this.http.post<RegisterResponse>(`${this.baseUrl}/auth/register`, payload);
+  }
+
+  fetchProfile(): Observable<User | null> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<{ user?: User; message?: string }>(`${this.baseUrl}/user/profile`, { headers }).pipe(
+      map((res) => {
+        if (res && res.user) {
+          const updatedUser: User = {
+            ...this.currentUser(),
+            ...res.user,
+            id: res.user._id || res.user.id
+          };
+          this.currentUser.set(updatedUser);
+          this.currentUserSubject.next(updatedUser);
+          localStorage.setItem('shopify_user', JSON.stringify(updatedUser));
+          return updatedUser;
+        }
+        return this.currentUser();
+      }),
+      catchError(() => of(this.currentUser()))
+    );
+  }
+
+  updateProfile(data: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: AddressItem[];
+    gender?: string;
+  }): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.put<{ message: string; user?: User }>(`${this.baseUrl}/user/profile`, data, { headers }).pipe(
+      tap((res) => {
+        if (res && res.user) {
+          const current = this.currentUser();
+          const merged = { ...current, ...res.user, id: res.user._id || res.user.id };
+          this.currentUser.set(merged);
+          this.currentUserSubject.next(merged);
+          localStorage.setItem('shopify_user', JSON.stringify(merged));
+        }
+      })
+    );
+  }
+
+  uploadProfileImage(file: File): Observable<any> {
+    const headers = this.getAuthHeaders();
+    const formData = new FormData();
+    formData.append('profile', file);
+
+    return this.http.patch<{ message: string; user?: User; image?: any }>(
+      `${this.baseUrl}/user/profile/image`,
+      formData,
+      { headers }
+    ).pipe(
+      tap((res) => {
+        this.fetchProfile().subscribe();
+      })
+    );
   }
 
   logout(): void {
     try {
+      localStorage.removeItem('shopify_token');
+      localStorage.removeItem('shopify_user');
       localStorage.removeItem('lux_token');
       localStorage.removeItem('lux_user');
     } catch {}
@@ -132,8 +202,8 @@ export class AuthService {
 
   public setSession(token: string, user: User): void {
     try {
-      localStorage.setItem('lux_token', token);
-      localStorage.setItem('lux_user', JSON.stringify(user));
+      localStorage.setItem('shopify_token', token);
+      localStorage.setItem('shopify_user', JSON.stringify(user));
     } catch {}
     this.token.set(token);
     this.currentUser.set(user);
@@ -159,9 +229,9 @@ export class AuthService {
       return 'Name must be at least 2 characters long.';
     }
     if (raw.includes('email is invalid format')) {
-      return 'Please enter a valid email address (e.g. user@example.com).';
+      return 'Please enter a valid email address.';
     }
-    if (raw.includes('Invalid login credentials')) {
+    if (raw.includes('Invalid login credentials') || raw.includes('Invalid credentials')) {
       return 'Incorrect email or password. Please verify your credentials.';
     }
     if (raw.includes('user not found')) {
@@ -197,7 +267,7 @@ export class AuthService {
 
   private getStoredToken(): string | null {
     try {
-      return localStorage.getItem('lux_token');
+      return localStorage.getItem('shopify_token') || localStorage.getItem('lux_token');
     } catch {
       return null;
     }
@@ -205,7 +275,7 @@ export class AuthService {
 
   private getStoredUser(): User | null {
     try {
-      const stored = localStorage.getItem('lux_user');
+      const stored = localStorage.getItem('shopify_user') || localStorage.getItem('lux_user');
       return stored ? JSON.parse(stored) : null;
     } catch {
       return null;

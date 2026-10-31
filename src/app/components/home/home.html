@@ -1,8 +1,8 @@
 <!-- Toast Notification -->
 @if (addedToast(); as msg) {
   <div class="fixed bottom-6 right-6 z-50 animate-bounce-short">
-    <div class="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#182032] to-[#0D121F] border border-[#D4AF37]/50 shadow-[0_10px_30px_rgba(212,175,55,0.25)] flex items-center gap-3 text-xs text-white">
-      <div class="w-6 h-6 rounded-full bg-[#D4AF37] text-black flex items-center justify-center font-bold text-[10px]">
+    <div class="px-5 py-3.5 rounded-2xl bg-gray-950 text-white shadow-2xl flex items-center gap-3 text-xs border border-gray-800">
+      <div class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-[10px]">
         <fa-icon [icon]="faCheck"></fa-icon>
       </div>
       <span class="font-medium">{{ msg }}</span>
@@ -10,109 +10,174 @@
   </div>
 }
 
-<div class="w-full flex flex-col bg-[#0B0F19] text-white">
-  <!-- Hero Section -->
-  <section class="relative w-full pt-36 pb-20 sm:pb-28 px-6 sm:px-12 overflow-hidden border-b border-white/5">
-    <!-- Ambient Radial Glows -->
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-[#D4AF37]/15 via-amber-500/5 to-transparent blur-[140px] rounded-full pointer-events-none"></div>
-    <div class="absolute -top-24 right-10 w-72 h-72 bg-amber-400/10 blur-[100px] rounded-full pointer-events-none"></div>
+<div class="w-full flex flex-col bg-white text-gray-900">
+  <!-- Shopify Hero Section -->
+  <section class="relative w-full bg-[#F4F4F6] overflow-hidden py-16 sm:py-24 border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <!-- Left Column: Copy & CTAs -->
+      <div class="lg:col-span-7 flex flex-col items-start text-left">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-800 shadow-2xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>New 2026 Collection Available Now</span>
+        </div>
 
-    <div class="max-w-5xl mx-auto flex flex-col items-center text-center relative z-10">
-      <!-- Top Badge -->
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-amber-300 shadow-sm backdrop-blur-md">
-        <fa-icon [icon]="faCrown" class="text-[#D4AF37] text-xs"></fa-icon>
-        <span>The 2026 High Repertoire Collection</span>
+        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-gray-950 mt-5 leading-[1.08] font-sans">
+          Engineered for <br/>
+          <span class="underline decoration-gray-300 decoration-wavy underline-offset-8">Everyday Luxury.</span>
+        </h1>
+
+        <p class="text-gray-600 mt-5 max-w-xl text-base sm:text-lg leading-relaxed font-normal">
+          Explore precision-crafted technology, flagship smartphones, and timeless lifestyle essentials. Verified authentic and backed by official manufacturer warranties.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-4 mt-8 w-full sm:w-auto">
+          <button
+            (click)="scrollToProducts()"
+            class="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-xs uppercase tracking-wider text-white bg-gray-950 hover:bg-black active:scale-95 transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>Shop New Arrivals</span>
+            <fa-icon [icon]="faArrowRight" class="text-xs"></fa-icon>
+          </button>
+
+          <a
+            routerLink="/products"
+            class="w-full sm:w-auto px-8 py-4 rounded-full font-semibold text-xs uppercase tracking-wider text-gray-800 bg-white hover:bg-gray-100 border border-gray-300 transition flex items-center justify-center"
+          >
+            Explore Catalog
+          </a>
+        </div>
+
+        <!-- Social Proof Stats -->
+        <div class="mt-10 pt-6 border-t border-gray-200/80 flex items-center gap-8 text-xs text-gray-500">
+          <div>
+            <p class="text-xl font-black text-gray-950">25,000+</p>
+            <p class="text-[11px] text-gray-500 mt-0.5">Satisfied Shoppers</p>
+          </div>
+          <div class="h-8 w-px bg-gray-300"></div>
+          <div>
+            <div class="flex items-center gap-1 text-amber-500 text-sm">
+              <fa-icon [icon]="faStar"></fa-icon>
+              <fa-icon [icon]="faStar"></fa-icon>
+              <fa-icon [icon]="faStar"></fa-icon>
+              <fa-icon [icon]="faStar"></fa-icon>
+              <fa-icon [icon]="faStar"></fa-icon>
+            </div>
+            <p class="text-[11px] text-gray-500 mt-0.5">4.9/5 Average Rating</p>
+          </div>
+        </div>
       </div>
 
-      <!-- Main Headline -->
-      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mt-6 leading-[1.1]">
-        Curated Elegance.
-        <span class="block luxury-text-gradient mt-2 font-black">Timeless Prestige.</span>
-      </h1>
+      <!-- Right Column: Hero Visual Product Banner -->
+      <div class="lg:col-span-5 relative flex items-center justify-center">
+        <div class="relative w-full aspect-square max-w-md bg-white rounded-3xl p-8 border border-gray-200 shadow-xl overflow-hidden flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase bg-gray-950 text-white tracking-wider">
+              Featured Drop
+            </span>
+            <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+              Limited Stock
+            </span>
+          </div>
 
-      <!-- Description -->
-      <p class="text-slate-400 mt-5 max-w-2xl text-xs sm:text-base leading-relaxed font-light">
-        Experience haute horlogerie, artisanal leather goods, and refined technological marvels. Each piece is authentic, vetted, and backed by international provenance.
-      </p>
+          <div class="my-auto py-6 flex items-center justify-center">
+            <img
+              src="https://res.cloudinary.com/gl2sbgtp/image/upload/v1793395428/e-comm/products/ufczltfaedlqudfwfhbe.jpg"
+              alt="Featured iPhone 15 Pro"
+              class="max-h-56 object-contain hover:scale-105 transition-transform duration-300 drop-shadow-md"
+            />
+          </div>
 
-      <!-- CTA Buttons -->
-      <div class="flex flex-col sm:flex-row items-center gap-4 mt-10 w-full sm:w-auto">
-        <button
-          (click)="scrollToProducts()"
-          class="w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-wider text-black bg-gradient-to-r from-[#FFE082] via-[#D4AF37] to-[#B8952B] hover:brightness-110 active:scale-95 transition shadow-[0_0_30px_rgba(212,175,55,0.35)] flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <span>Explore Collection</span>
-          <fa-icon [icon]="faArrowRight" class="text-xs"></fa-icon>
-        </button>
-
-        <a
-          routerLink="/products"
-          class="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-xs uppercase tracking-wider text-slate-200 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition flex items-center justify-center"
-        >
-          All Luxury Catalog
-        </a>
-      </div>
-
-      <!-- Stats Grid -->
-      <div class="mt-16 pt-10 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-6 w-full max-w-4xl">
-        <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center">
-          <p class="text-2xl sm:text-3xl font-black text-white">+10,000</p>
-          <p class="text-[11px] text-slate-400 uppercase tracking-wider mt-1">Private Collectors</p>
-        </div>
-
-        <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center">
-          <p class="text-2xl sm:text-3xl font-black luxury-text-gradient">100%</p>
-          <p class="text-[11px] text-slate-400 uppercase tracking-wider mt-1">Verified Authentic</p>
-        </div>
-
-        <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center">
-          <p class="text-2xl sm:text-3xl font-black text-white">4.9 ★</p>
-          <p class="text-[11px] text-slate-400 uppercase tracking-wider mt-1">Global Rating</p>
-        </div>
-
-        <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center">
-          <p class="text-2xl sm:text-3xl font-black text-[#D4AF37]">$0</p>
-          <p class="text-[11px] text-slate-400 uppercase tracking-wider mt-1">Insured VIP Delivery</p>
+          <div class="border-t border-gray-100 pt-3 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-500 font-semibold uppercase">Flagship Edition</p>
+              <h3 class="text-sm font-bold text-gray-900">iPhone 15 Pro Titanium</h3>
+            </div>
+            <span class="text-base font-black text-gray-950">$999</span>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Luxury Brand Strip -->
-  <section class="w-full py-8 bg-[#0D1322] border-b border-white/5 px-6">
-    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-around gap-8 text-center opacity-70 hover:opacity-100 transition-opacity">
-      @for (brand of brands; track brand.name) {
-        <div class="flex flex-col items-center">
-          <span class="text-sm sm:text-base font-extrabold tracking-widest text-slate-200 uppercase">{{ brand.name }}</span>
-          <span class="text-[9px] text-[#D4AF37] font-semibold tracking-wider">{{ brand.tag }}</span>
+  <!-- 4 Feature Value Props Bar (Shopify Standard) -->
+  <section class="w-full py-10 bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
+      @for (feat of features; track feat.title) {
+        <div class="flex items-start gap-3.5 p-3">
+          <div class="w-10 h-10 rounded-xl bg-gray-100 text-gray-900 flex items-center justify-center text-base shrink-0">
+            <fa-icon [icon]="feat.icon"></fa-icon>
+          </div>
+          <div>
+            <h4 class="text-xs sm:text-sm font-bold text-gray-950">{{ feat.title }}</h4>
+            <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5 leading-snug">{{ feat.desc }}</p>
+          </div>
         </div>
       }
     </div>
   </section>
 
-  <!-- Featured Collection Grid Section -->
-  <section id="collection" class="w-full py-20 px-4 sm:px-8 max-w-7xl mx-auto">
-    <div class="flex flex-col items-center text-center mb-10">
-      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/25 text-[11px] font-bold text-[#D4AF37] uppercase tracking-widest">
-        <fa-icon [icon]="faCrown" class="text-[10px]"></fa-icon>
-        <span>Curated Catalog</span>
+  <!-- Featured Categories Showcase Section -->
+  <section class="w-full py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+      <div>
+        <span class="text-xs uppercase font-extrabold tracking-wider text-gray-500">Categories</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-950 tracking-tight mt-1">
+          Explore by Category
+        </h2>
       </div>
 
-      <h2 class="text-3xl sm:text-4xl font-black tracking-tight text-white mt-3">
-        Discover By Category
+      <a
+        routerLink="/products"
+        class="text-xs font-bold text-gray-900 hover:text-black flex items-center gap-1 group"
+      >
+        <span>View all categories</span>
+        <fa-icon [icon]="faArrowRight" class="group-hover:translate-x-1 transition-transform"></fa-icon>
+      </a>
+    </div>
+
+    <!-- Category Cards Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+      @for (cat of categories(); track cat.id) {
+        <button
+          (click)="selectCategory(cat._id || cat.id); scrollToProducts()"
+          class="group bg-gray-50 hover:bg-gray-100/80 rounded-2xl p-5 border border-gray-200 transition-all text-left flex flex-col justify-between cursor-pointer"
+        >
+          <div class="w-full aspect-video rounded-xl bg-white p-3 mb-4 flex items-center justify-center overflow-hidden border border-gray-100">
+            <img
+              [src]="cat.image"
+              [alt]="cat.name"
+              class="max-h-full object-contain group-hover:scale-108 transition-transform duration-300"
+            />
+          </div>
+
+          <div>
+            <h3 class="text-sm font-bold text-gray-900 group-hover:text-black">{{ cat.name }}</h3>
+            <span class="text-xs text-gray-500 mt-0.5 inline-block font-medium">Browse Collection &rarr;</span>
+          </div>
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- Bestsellers & Featured Products Section -->
+  <section id="bestsellers" class="w-full py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-gray-200">
+    <div class="flex flex-col items-center text-center mb-8">
+      <span class="text-xs uppercase font-extrabold tracking-wider text-gray-500">Curated Catalog</span>
+      <h2 class="text-2xl sm:text-4xl font-extrabold text-gray-950 tracking-tight mt-1">
+        Trending Bestsellers
       </h2>
-      <p class="text-xs sm:text-sm text-slate-400 mt-2 max-w-md">
-        Select a fine category to explore certified luxury masterpieces directly from the vaults.
+      <p class="text-xs sm:text-sm text-gray-500 mt-2 max-w-md">
+        Handpicked top-tier products, guaranteed genuine and in stock for immediate shipment.
       </p>
 
-      <!-- Category Filter Tabs -->
-      <div class="flex flex-wrap items-center justify-center gap-2 mt-8 w-full max-w-2xl">
+      <!-- Category Filter Pills -->
+      <div class="flex flex-wrap items-center justify-center gap-2 mt-6">
         <button
           (click)="selectCategory(null)"
           [class]="selectedCategoryId() === null
-            ? 'bg-[#D4AF37] text-black font-extrabold shadow-lg shadow-[#D4AF37]/25 border-[#D4AF37]'
-            : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border-white/10'"
-          class="px-5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer"
+            ? 'bg-gray-950 text-white font-bold shadow-xs'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium'"
+          class="px-5 py-2 rounded-full text-xs transition cursor-pointer"
         >
           All Items
         </button>
@@ -121,9 +186,9 @@
           <button
             (click)="selectCategory(cat._id || cat.id)"
             [class]="selectedCategoryId() === (cat._id || cat.id)
-              ? 'bg-[#D4AF37] text-black font-extrabold shadow-lg shadow-[#D4AF37]/25 border-[#D4AF37]'
-              : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border-white/10'"
-            class="px-5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer"
+              ? 'bg-gray-950 text-white font-bold shadow-xs'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium'"
+            class="px-5 py-2 rounded-full text-xs transition cursor-pointer"
           >
             {{ cat.name }}
           </button>
@@ -138,43 +203,170 @@
       (addToCart)="handleAddToCart($event)"
     ></app-product-list>
 
-    <div class="mt-12 text-center">
+    <div class="mt-10 text-center">
       <a
         routerLink="/products"
-        class="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider text-white bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#D4AF37]/50 transition"
+        class="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-gray-900 bg-white hover:bg-gray-100 border border-gray-300 transition shadow-2xs"
       >
-        <span>View Complete Catalogue</span>
+        <span>View Complete Store Catalog</span>
         <fa-icon [icon]="faArrowRight"></fa-icon>
       </a>
     </div>
   </section>
 
-  <!-- The Luxury Guarantee / Features Section -->
-  <section class="w-full py-20 px-6 sm:px-12 bg-gradient-to-b from-[#0B0F19] via-[#0E1526] to-[#0B0F19] border-t border-white/5">
-    <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-14">
-        <span class="text-xs uppercase font-extrabold tracking-widest text-[#D4AF37]">
-          The Gold Standard
+  <!-- Split Promotional Section -->
+  <section class="w-full py-16 bg-[#F9FAFB] border-y border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+      <div class="space-y-4">
+        <span class="text-xs font-extrabold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+          The Clean Guarantee
         </span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-2">
-          Why Discerning Clients Choose LUXURY
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">
+          Crafted with Passion. <br/>Delivered with Care.
         </h2>
-        <p class="text-xs sm:text-sm text-slate-400 mt-2 max-w-lg mx-auto">
-          Unrivaled authenticity standards, white-glove logistics, and bespoke client confidentiality.
+        <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+          Every item in our storefront is sourced directly from authenticated distributors. We verify serial numbers, inspect packaging, and provide trackable express delivery right to your doorstep.
         </p>
+
+        <div class="pt-2">
+          <a
+            routerLink="/products"
+            class="inline-block px-7 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-gray-950 hover:bg-black transition shadow-xs"
+          >
+            Shop Current Drops
+          </a>
+        </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        @for (item of whyChoose; track item.head) {
-          <div class="p-6 rounded-3xl bg-[#121929]/70 border border-white/5 hover:border-[#D4AF37]/40 hover:bg-[#161F33] transition-all duration-300 group">
-            <div class="w-12 h-12 rounded-2xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#D4AF37] flex items-center justify-center text-lg mb-5 group-hover:scale-110 transition-transform">
-              <fa-icon [icon]="item.icon"></fa-icon>
-            </div>
-            <h3 class="text-base font-bold text-white mb-2">{{ item.head }}</h3>
-            <p class="text-xs text-slate-400 leading-relaxed font-light">{{ item.info }}</p>
-          </div>
-        }
+      <div class="rounded-3xl overflow-hidden bg-white border border-gray-200 shadow-md p-6 flex items-center justify-center">
+        <img
+          src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800"
+          alt="Audio collection"
+          class="rounded-2xl max-h-72 object-cover w-full"
+        />
       </div>
     </div>
   </section>
+
+  <!-- Customer Testimonials (Shopify Social Proof) -->
+  <section class="w-full py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="text-center mb-12">
+      <span class="text-xs uppercase font-extrabold tracking-wider text-gray-500">Reviews</span>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-950 tracking-tight mt-1">
+        Loved by Shoppers Worldwide
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      @for (review of testimonials; track review.name) {
+        <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-xs flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-1 text-amber-500 text-xs mb-3">
+              @for (star of [1,2,3,4,5]; track star) {
+                <fa-icon [icon]="faStar"></fa-icon>
+              }
+            </div>
+            <p class="text-xs sm:text-sm text-gray-700 leading-relaxed font-normal">
+              "{{ review.comment }}"
+            </p>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-gray-100 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-bold text-xs text-gray-700">
+              {{ review.name.charAt(0) }}
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-gray-900">{{ review.name }}</h4>
+              <p class="text-[10px] text-emerald-600 font-semibold">{{ review.title }}</p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Newsletter Signup (Classic Shopify Element) -->
+  <section class="w-full py-16 bg-gray-950 text-white px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto text-center">
+      <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+        Join the NOVA Members Club
+      </h2>
+      <p class="text-gray-400 text-xs sm:text-sm mt-2 max-w-md mx-auto">
+        Subscribe to receive private sale invitations, newly dropped products, and exclusive member benefits.
+      </p>
+
+      <div class="mt-6 flex flex-col sm:flex-row items-center gap-2 max-w-md mx-auto">
+        <input
+          type="email"
+          [ngModel]="newsletterEmail()"
+          (ngModelChange)="newsletterEmail.set($event)"
+          placeholder="Enter your email address..."
+          class="w-full px-4 py-3 rounded-full bg-gray-900 border border-gray-800 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-white"
+        />
+        <button
+          (click)="onSubscribeNewsletter()"
+          class="w-full sm:w-auto px-6 py-3 rounded-full font-bold text-xs uppercase tracking-wider text-black bg-white hover:bg-gray-100 transition whitespace-nowrap cursor-pointer"
+        >
+          Subscribe
+        </button>
+      </div>
+
+      @if (newsletterSuccess()) {
+        <p class="text-xs text-emerald-400 mt-3 font-semibold animate-fade-in">
+          Thank you for subscribing! Check your inbox for your 10% welcome voucher.
+        </p>
+      }
+    </div>
+  </section>
+
+  <!-- Shopify Footer -->
+  <footer class="w-full bg-white border-t border-gray-200 py-12 px-4 sm:px-6 lg:px-8 text-xs text-gray-600">
+    <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+      <div>
+        <h3 class="font-bold text-gray-950 uppercase tracking-wider text-xs mb-3">Shop</h3>
+        <ul class="space-y-2">
+          <li><a routerLink="/products" class="hover:text-black transition">All Collections</a></li>
+          <li><a routerLink="/products" class="hover:text-black transition">Bestsellers</a></li>
+          <li><a routerLink="/products" class="hover:text-black transition">New Releases</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="font-bold text-gray-950 uppercase tracking-wider text-xs mb-3">Customer Care</h3>
+        <ul class="space-y-2">
+          <li><a routerLink="/orders" class="hover:text-black transition">Track My Order</a></li>
+          <li><a routerLink="/profile" class="hover:text-black transition">Account Settings</a></li>
+          <li><a routerLink="/products" class="hover:text-black transition">Shipping & Delivery</a></li>
+          <li><a routerLink="/products" class="hover:text-black transition">Returns & Exchanges</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="font-bold text-gray-950 uppercase tracking-wider text-xs mb-3">Company</h3>
+        <ul class="space-y-2">
+          <li><a href="#" class="hover:text-black transition">Our Story</a></li>
+          <li><a href="#" class="hover:text-black transition">Authenticity Guarantee</a></li>
+          <li><a href="#" class="hover:text-black transition">Sustainability</a></li>
+          <li><a href="#" class="hover:text-black transition">Privacy Policy</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="font-bold text-gray-950 uppercase tracking-wider text-xs mb-3">Secure Shopping</h3>
+        <p class="text-[11px] text-gray-500 mb-3">
+          All transactions are encrypted with 256-bit SSL security protocol.
+        </p>
+        <div class="flex items-center gap-2 text-gray-400">
+          <span class="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-[10px] font-bold text-gray-700">VISA</span>
+          <span class="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-[10px] font-bold text-gray-700">MASTERCARD</span>
+          <span class="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-[10px] font-bold text-gray-700">APPLE PAY</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto pt-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-4">
+      <p>&copy; 2026 NOVA STORE. Powered by Shopify Engine & NTI E-Commerce API.</p>
+      <p>Clean Shopify Architecture • Built with Angular & Tailwind CSS</p>
+    </div>
+  </footer>
 </div>

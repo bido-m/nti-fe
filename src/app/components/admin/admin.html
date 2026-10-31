@@ -1,0 +1,419 @@
+<div class="min-h-screen bg-[#F9FAFB] text-gray-900 pb-20 pt-8">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-200">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-gray-500 mb-1">
+          <a routerLink="/" class="hover:text-black">Home</a>
+          <span>/</span>
+          <span class="text-gray-950 font-bold">Admin Management</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-950 tracking-tight">
+          Store Management Console
+        </h1>
+        <p class="text-xs text-gray-500 mt-0.5">
+          Full control over products, categories, subcategories, brands, and store orders via Bruno API endpoints.
+        </p>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="flex items-center bg-gray-200/80 p-1 rounded-full text-xs font-bold">
+        <button
+          (click)="activeTab.set('products')"
+          [class]="activeTab() === 'products' ? 'bg-white text-gray-950 shadow-xs' : 'text-gray-600 hover:text-black'"
+          class="px-4 py-2 rounded-full transition cursor-pointer"
+        >
+          Products
+        </button>
+        <button
+          (click)="activeTab.set('catalog')"
+          [class]="activeTab() === 'catalog' ? 'bg-white text-gray-950 shadow-xs' : 'text-gray-600 hover:text-black'"
+          class="px-4 py-2 rounded-full transition cursor-pointer"
+        >
+          Categories & Brands
+        </button>
+        <button
+          (click)="activeTab.set('orders')"
+          [class]="activeTab() === 'orders' ? 'bg-white text-gray-950 shadow-xs' : 'text-gray-600 hover:text-black'"
+          class="px-4 py-2 rounded-full transition cursor-pointer"
+        >
+          All Orders ({{ orders().length }})
+        </button>
+      </div>
+    </div>
+
+    <!-- Feedback Alerts -->
+    @if (successMsg()) {
+      <div class="mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2 animate-fade-in">
+        <fa-icon [icon]="faCheck" class="text-emerald-600"></fa-icon>
+        <span>{{ successMsg() }}</span>
+      </div>
+    }
+    @if (errorMsg()) {
+      <div class="mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2 animate-fade-in">
+        <fa-icon [icon]="faCircleExclamation" class="text-rose-600"></fa-icon>
+        <span>{{ errorMsg() }}</span>
+      </div>
+    }
+
+    <!-- TAB 1: PRODUCTS -->
+    @if (activeTab() === 'products') {
+      <div class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Add Product Form (Bruno POST /product) -->
+        <div class="lg:col-span-5 bg-white p-6 sm:p-8 rounded-3xl border border-gray-200 shadow-xs">
+          <h2 class="text-base font-extrabold text-gray-950 mb-1">Add New Product</h2>
+          <p class="text-xs text-gray-500 mb-6">Upload multipart image, assign category, subcategory, and brand.</p>
+
+          <form (ngSubmit)="createProduct()" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-900 mb-1">Product Title</label>
+              <input
+                type="text"
+                [ngModel]="pName()"
+                (ngModelChange)="pName.set($event)"
+                name="pName"
+                placeholder="e.g. MacBook Pro M3"
+                required
+                class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-gray-950"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-gray-900 mb-1">Price ($)</label>
+                <input
+                  type="number"
+                  [ngModel]="pPrice()"
+                  (ngModelChange)="pPrice.set($event)"
+                  name="pPrice"
+                  placeholder="999"
+                  required
+                  class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-gray-950"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-900 mb-1">Stock</label>
+                <input
+                  type="number"
+                  [ngModel]="pStock()"
+                  (ngModelChange)="pStock.set($event)"
+                  name="pStock"
+                  placeholder="20"
+                  class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-gray-950"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-900 mb-1">Category</label>
+              <select
+                [ngModel]="pCategoryId()"
+                (ngModelChange)="pCategoryId.set($event)"
+                name="pCategoryId"
+                class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-gray-950 cursor-pointer"
+              >
+                @for (c of categories(); track c.id) {
+                  <option [value]="c._id || c.id">{{ c.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-gray-900 mb-1">Subcategory</label>
+                <select
+                  [ngModel]="pSubcategoryId()"
+                  (ngModelChange)="pSubcategoryId.set($event)"
+                  name="pSubcategoryId"
+                  class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-gray-950 cursor-pointer"
+                >
+                  @for (s of subcategories(); track s.id) {
+                    <option [value]="s._id || s.id">{{ s.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-900 mb-1">Brand</label>
+                <select
+                  [ngModel]="pBrandId()"
+                  (ngModelChange)="pBrandId.set($event)"
+                  name="pBrandId"
+                  class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-gray-950 cursor-pointer"
+                >
+                  @for (b of brands(); track b.id) {
+                    <option [value]="b._id || b.id">{{ b.name }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-900 mb-1">Description</label>
+              <textarea
+                [ngModel]="pDescription()"
+                (ngModelChange)="pDescription.set($event)"
+                name="pDescription"
+                rows="2"
+                placeholder="Product highlights..."
+                class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-gray-950"
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-900 mb-1">Product Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                (change)="onProductFileSelected($event)"
+                class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer"
+              />
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="isSubmitting()"
+              class="w-full py-3 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-gray-950 hover:bg-black transition shadow-sm cursor-pointer disabled:opacity-50"
+            >
+              {{ isSubmitting() ? 'Publishing Product...' : 'Publish to Store' }}
+            </button>
+          </form>
+        </div>
+
+        <!-- Products List & Deletion -->
+        <div class="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-gray-200 shadow-xs">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-base font-extrabold text-gray-950">Active Catalog ({{ products().length }})</h2>
+          </div>
+
+          <div class="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
+            @for (p of products(); track p.id) {
+              <div class="py-3 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 min-w-0">
+                  <img
+                    [src]="p.image_url"
+                    [alt]="p.title"
+                    class="w-12 h-12 object-contain bg-gray-50 rounded-lg p-1 border border-gray-200 shrink-0"
+                  />
+                  <div class="min-w-0">
+                    <h4 class="text-xs font-bold text-gray-900 truncate">{{ p.title }}</h4>
+                    <p class="text-[11px] text-gray-400 mt-0.5">${{ p.price }} &bull; Stock: {{ p.stock }}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <a
+                    [routerLink]="['/products', p._id || p.id]"
+                    class="px-3 py-1 rounded-full text-[11px] font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition"
+                  >
+                    View
+                  </a>
+                  @if (p._id) {
+                    <button
+                      (click)="deleteProduct(p._id)"
+                      class="p-2 text-gray-400 hover:text-rose-600 transition cursor-pointer"
+                      title="Delete product"
+                    >
+                      <fa-icon [icon]="faTrash" class="text-xs"></fa-icon>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 2: CATEGORIES & BRANDS -->
+    @if (activeTab() === 'catalog') {
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Create Category -->
+        <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-xs">
+          <h3 class="text-sm font-bold text-gray-950 mb-1">Create Category</h3>
+          <p class="text-[11px] text-gray-500 mb-4">Bruno endpoint: POST /category</p>
+
+          <form (ngSubmit)="createCategory()" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Category Name</label>
+              <input
+                type="text"
+                [ngModel]="catName()"
+                (ngModelChange)="catName.set($event)"
+                name="catName"
+                placeholder="e.g. Footwear"
+                required
+                class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Category Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                (change)="onCatFileSelected($event)"
+                class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[11px] file:bg-gray-100"
+              />
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="isSubmitting() || !catName()"
+              class="w-full py-2.5 rounded-full text-xs font-bold text-white bg-gray-950 hover:bg-black transition cursor-pointer disabled:opacity-50"
+            >
+              Add Category
+            </button>
+          </form>
+        </div>
+
+        <!-- Create Subcategory -->
+        <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-xs">
+          <h3 class="text-sm font-bold text-gray-950 mb-1">Create Subcategory</h3>
+          <p class="text-[11px] text-gray-500 mb-4">Bruno endpoint: POST /subcategory</p>
+
+          <form (ngSubmit)="createSubcategory()" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Subcategory Name</label>
+              <input
+                type="text"
+                [ngModel]="subName()"
+                (ngModelChange)="subName.set($event)"
+                name="subName"
+                placeholder="e.g. Running Shoes"
+                required
+                class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Parent Category</label>
+              <select
+                [ngModel]="subCatId()"
+                (ngModelChange)="subCatId.set($event)"
+                name="subCatId"
+                class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs cursor-pointer"
+              >
+                @for (c of categories(); track c.id) {
+                  <option [value]="c._id || c.id">{{ c.name }}</option>
+                }
+              </select>
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="isSubmitting() || !subName()"
+              class="w-full py-2.5 rounded-full text-xs font-bold text-white bg-gray-950 hover:bg-black transition cursor-pointer disabled:opacity-50"
+            >
+              Add Subcategory
+            </button>
+          </form>
+        </div>
+
+        <!-- Create Brand -->
+        <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-xs">
+          <h3 class="text-sm font-bold text-gray-950 mb-1">Create Brand</h3>
+          <p class="text-[11px] text-gray-500 mb-4">Bruno endpoint: POST /brand</p>
+
+          <form (ngSubmit)="createBrand()" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Brand Name</label>
+              <input
+                type="text"
+                [ngModel]="brandName()"
+                (ngModelChange)="brandName.set($event)"
+                name="brandName"
+                placeholder="e.g. Nike"
+                required
+                class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Brand Logo</label>
+              <input
+                type="file"
+                accept="image/*"
+                (change)="onBrandLogoSelected($event)"
+                class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[11px] file:bg-gray-100"
+              />
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="isSubmitting() || !brandName()"
+              class="w-full py-2.5 rounded-full text-xs font-bold text-white bg-gray-950 hover:bg-black transition cursor-pointer disabled:opacity-50"
+            >
+              Add Brand
+            </button>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 3: ALL ORDERS (ADMIN) -->
+    @if (activeTab() === 'orders') {
+      <div class="mt-8 bg-white p-6 sm:p-8 rounded-3xl border border-gray-200 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-extrabold text-gray-950">System Orders</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Manage customer fulfillment via Bruno endpoint PUT /order/:id/status</p>
+          </div>
+          <button
+            (click)="loadOrders()"
+            class="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-semibold text-gray-800 transition cursor-pointer"
+          >
+            Refresh Orders
+          </button>
+        </div>
+
+        @if (orders().length === 0) {
+          <div class="text-center py-16 text-gray-500 text-xs">
+            No customer orders recorded in the system yet.
+          </div>
+        } @else {
+          <div class="space-y-4">
+            @for (ord of orders(); track ord._id) {
+              <div class="p-4 rounded-2xl bg-gray-50 border border-gray-200 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-mono font-bold text-gray-900">#{{ ord._id.slice(-8).toUpperCase() }}</span>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                      [class.bg-emerald-100]="ord.status === 'completed'"
+                      [class.text-emerald-800]="ord.status === 'completed'"
+                      [class.bg-amber-100]="ord.status === 'pending'"
+                      [class.text-amber-800]="ord.status === 'pending'"
+                      [class.bg-gray-200]="ord.status === 'canceled'"
+                      [class.text-gray-700]="ord.status === 'canceled'"
+                    >
+                      {{ ord.status }}
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-gray-500 mt-0.5">
+                    Items: {{ ord.products?.length || 0 }} &bull; Total: ${{ ord.totalOrderPrice || ord.totalPrice || 0 }}
+                  </p>
+                </div>
+
+                <!-- Status Updater Dropdown -->
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="text-gray-500 font-medium">Update Status:</span>
+                  <select
+                    [ngModel]="ord.status"
+                    (ngModelChange)="updateOrderStatus(ord._id, $event)"
+                    class="px-3 py-1 bg-white border border-gray-300 rounded-lg text-xs font-bold text-gray-900 focus:outline-none cursor-pointer"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                    <option value="canceled">Canceled</option>
+                  </select>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,142 @@
+<div class="min-h-screen bg-[#F9FAFB] text-gray-900 pb-20 pt-8">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-200">
+      <div>
+        <div class="flex items-center gap-2">
+          <a routerLink="/" class="text-xs text-gray-500 hover:text-black">Home</a>
+          <span class="text-xs text-gray-400">/</span>
+          <span class="text-xs text-gray-900 font-bold">My Orders</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-950 tracking-tight mt-1">
+          Your Order History
+        </h1>
+        <p class="text-xs text-gray-500 mt-1">
+          Track packages, review past purchases, or cancel pending requests.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button
+          (click)="loadOrders()"
+          class="px-4 py-2 bg-white border border-gray-300 rounded-full text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer flex items-center gap-1.5"
+        >
+          <fa-icon [icon]="faRotateRight" class="text-xs"></fa-icon>
+          <span>Refresh</span>
+        </button>
+
+        <a
+          routerLink="/products"
+          class="px-5 py-2 bg-gray-950 text-white rounded-full text-xs font-bold hover:bg-black transition shadow-xs"
+        >
+          Shop More
+        </a>
+      </div>
+    </div>
+
+    <!-- Success Message -->
+    @if (successMsg()) {
+      <div class="mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2 animate-fade-in">
+        <fa-icon [icon]="faCheck" class="text-emerald-600"></fa-icon>
+        <span>{{ successMsg() }}</span>
+      </div>
+    }
+
+    <!-- Content State -->
+    @if (isLoading()) {
+      <div class="py-12 space-y-4">
+        @for (i of [1,2,3]; track i) {
+          <div class="bg-white rounded-2xl border border-gray-200 p-6 animate-pulse">
+            <div class="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div class="h-16 bg-gray-100 rounded-xl w-full mb-3"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/3"></div>
+          </div>
+        }
+      </div>
+    } @else if (orders().length === 0) {
+      <div class="mt-8 text-center py-20 bg-white rounded-3xl border border-gray-200 shadow-xs flex flex-col items-center">
+        <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-4">
+          <fa-icon [icon]="faBoxOpen" class="text-2xl"></fa-icon>
+        </div>
+        <h3 class="text-base font-bold text-gray-900">No orders placed yet</h3>
+        <p class="text-xs text-gray-500 mt-1 max-w-sm">
+          You haven't made any purchases yet. Explore our catalog and add items to your cart.
+        </p>
+        <a
+          routerLink="/products"
+          class="mt-6 px-6 py-2.5 rounded-full text-xs font-bold text-white bg-gray-950 hover:bg-black transition shadow-xs"
+        >
+          Explore Catalog
+        </a>
+      </div>
+    } @else {
+      <!-- Orders List -->
+      <div class="mt-8 space-y-6">
+        @for (order of orders(); track order._id) {
+          <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs hover:border-gray-300 transition">
+            <!-- Order Header Bar -->
+            <div class="p-4 sm:p-5 bg-gray-50/80 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono text-gray-500">Order #{{ order._id.slice(-8).toUpperCase() }}</span>
+                  <span
+                    class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border"
+                    [ngClass]="getStatusClass(order.status)"
+                  >
+                    {{ order.status }}
+                  </span>
+                </div>
+                <p class="text-[11px] text-gray-400 mt-0.5">
+                  Placed on {{ order.createdAt ? (order.createdAt | date:'medium') : 'Recently' }}
+                </p>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-black text-gray-950">
+                  Total: ${{ order.totalOrderPrice || order.totalPrice || 0 }}
+                </span>
+
+                @if (order.status === 'pending') {
+                  <button
+                    (click)="cancelOrder(order._id)"
+                    [disabled]="cancelingId() === order._id"
+                    class="px-3 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 transition cursor-pointer disabled:opacity-50"
+                  >
+                    {{ cancelingId() === order._id ? 'Cancelling...' : 'Cancel Order' }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Ordered Items Grid -->
+            <div class="p-4 sm:p-6 divide-y divide-gray-100">
+              @for (item of order.products; track item._id || item.product_id._id) {
+                <div class="py-3 flex items-center justify-between gap-4">
+                  <div class="flex items-center gap-4">
+                    <img
+                      [src]="item.product_id.image?.secure_url || item.product_id.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200'"
+                      [alt]="item.product_id.name"
+                      class="w-14 h-14 object-contain bg-gray-50 rounded-xl p-1 border border-gray-200 shrink-0"
+                    />
+                    <div>
+                      <h4 class="text-xs font-bold text-gray-900 line-clamp-1">
+                        {{ item.product_id.name || item.product_id.title }}
+                      </h4>
+                      <p class="text-[11px] text-gray-500 mt-0.5">
+                        Qty: {{ item.quantity }} &bull; Unit Price: ${{ item.product_id.price }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span class="text-xs font-bold text-gray-950">
+                    ${{ (item.price || item.product_id.price) * item.quantity }}
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,210 +1,357 @@
-<header class="w-full fixed top-0 left-0 bg-[#0B0F19]/90 backdrop-blur-xl border-b border-white/10 px-5 sm:px-12 py-3.5 z-50 flex items-center justify-between transition-all">
-  <!-- Brand Logo & Nav Links -->
-  <div class="flex items-center gap-8">
-    <a routerLink="/" class="flex items-center gap-2 group cursor-pointer">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FFE484] to-[#B8952B] flex items-center justify-center text-black font-black text-sm shadow-[0_0_20px_rgba(212,175,55,0.4)] group-hover:scale-105 transition-transform">
-        <fa-icon [icon]="faCrown" class="text-xs"></fa-icon>
-      </div>
-      <span class="font-extrabold text-xl tracking-wider text-white">
-        LUX<span class="luxury-text-gradient">URY</span>
-      </span>
-    </a>
+<!-- Top Announcement Bar (Shopify Classic Style) -->
+<div class="w-full bg-gray-950 text-white text-[11px] sm:text-xs font-medium py-2 px-4 text-center tracking-wide flex items-center justify-center gap-2">
+  <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+  <span>Spring Sale: Free Express Shipping on orders over ${{ freeShippingThreshold }} &bull; 30-Day Hassle-Free Guarantee</span>
+</div>
 
-    <!-- Desktop Navigation -->
-    <nav class="hidden md:flex items-center gap-1.5 text-xs font-semibold tracking-wide">
+<!-- Main Sticky Header -->
+<header class="sticky top-0 left-0 w-full bg-white/95 backdrop-blur-md border-b border-gray-200 z-40 transition-all shadow-xs">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+    <!-- Left: Mobile Menu Toggle & Brand Logo -->
+    <div class="flex items-center gap-4">
+      <button
+        (click)="toggleMobileMenu()"
+        class="md:hidden p-2 text-gray-700 hover:text-black rounded-lg hover:bg-gray-100 transition"
+        aria-label="Toggle menu"
+      >
+        <fa-icon [icon]="isMobileMenuOpen() ? faXmark : faBars" class="text-lg"></fa-icon>
+      </button>
+
+      <a routerLink="/" class="flex items-center gap-2 group">
+        <div class="w-9 h-9 rounded-lg bg-gray-950 text-white flex items-center justify-center font-black text-sm tracking-tighter group-hover:bg-black transition">
+          <fa-icon [icon]="faStore" class="text-xs"></fa-icon>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xl font-extrabold tracking-tight text-gray-950 font-sans">
+            NOVA<span class="text-gray-400 font-light">STORE</span>
+          </span>
+          <span class="text-[9px] uppercase tracking-widest text-gray-500 font-bold -mt-1">
+            Shopify Edition
+          </span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Center: Desktop Navigation Links -->
+    <nav class="hidden md:flex items-center gap-1 font-medium text-sm text-gray-600">
       <a
         routerLink="/"
-        routerLinkActive="bg-white/10 text-[#D4AF37] border-white/15"
+        routerLinkActive="text-gray-950 font-bold border-gray-950"
         [routerLinkActiveOptions]="{ exact: true }"
-        class="px-4 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 border border-transparent transition-all"
+        class="px-4 py-2 hover:text-gray-950 transition border-b-2 border-transparent"
       >
         Home
       </a>
       <a
         routerLink="/products"
-        routerLinkActive="bg-white/10 text-[#D4AF37] border-white/15"
-        class="px-4 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 border border-transparent transition-all"
+        routerLinkActive="text-gray-950 font-bold border-gray-950"
+        class="px-4 py-2 hover:text-gray-950 transition border-b-2 border-transparent"
       >
-        Collection
+        Catalog
+      </a>
+      @if (authService.isLoggedIn()) {
+        <a
+          routerLink="/orders"
+          routerLinkActive="text-gray-950 font-bold border-gray-950"
+          class="px-4 py-2 hover:text-gray-950 transition border-b-2 border-transparent"
+        >
+          My Orders
+        </a>
+      }
+      @if (authService.isAdmin()) {
+        <a
+          routerLink="/admin"
+          routerLinkActive="text-gray-950 font-bold border-gray-950"
+          class="px-4 py-2 text-indigo-600 font-semibold hover:text-indigo-800 transition border-b-2 border-transparent flex items-center gap-1.5"
+        >
+          <fa-icon [icon]="faUserGear" class="text-xs"></fa-icon>
+          <span>Admin</span>
+        </a>
+      }
+    </nav>
+
+    <!-- Right: Search, Account & Cart -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Search Link -->
+      <a
+        routerLink="/products"
+        class="p-2.5 text-gray-700 hover:text-gray-950 hover:bg-gray-100 rounded-full transition"
+        title="Search Catalog"
+      >
+        <fa-icon [icon]="faMagnifyingGlass" class="text-base"></fa-icon>
+      </a>
+
+      <!-- Account Dropdown Trigger -->
+      <div class="relative">
+        @if (authService.currentUser(); as user) {
+          <button
+            (click)="toggleUserMenu()"
+            class="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full transition cursor-pointer"
+          >
+            <div class="w-7 h-7 rounded-full bg-gray-950 text-white flex items-center justify-center text-xs font-bold uppercase">
+              {{ user.name.charAt(0) }}
+            </div>
+            <span class="hidden sm:inline font-medium max-w-[100px] truncate">{{ user.name }}</span>
+          </button>
+
+          <!-- Dropdown Menu -->
+          @if (isUserMenuOpen()) {
+            <div
+              (click)="closeUserMenu()"
+              class="fixed inset-0 z-20"
+            ></div>
+            <div class="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-2xl shadow-xl py-2 z-30 animate-fade-in text-xs font-medium text-gray-700">
+              <div class="px-4 py-2 border-b border-gray-100">
+                <p class="font-bold text-gray-900 truncate">{{ user.name }}</p>
+                <p class="text-gray-500 text-[11px] truncate">{{ user.email }}</p>
+                @if (user.role === 'admin') {
+                  <span class="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    Administrator
+                  </span>
+                }
+              </div>
+
+              <a routerLink="/profile" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-gray-50 text-gray-700 hover:text-black transition">
+                <fa-icon [icon]="faUser" class="text-gray-400"></fa-icon>
+                <span>My Profile</span>
+              </a>
+
+              <a routerLink="/orders" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-gray-50 text-gray-700 hover:text-black transition">
+                <fa-icon [icon]="faBoxOpen" class="text-gray-400"></fa-icon>
+                <span>My Orders</span>
+              </a>
+
+              @if (user.role === 'admin') {
+                <a routerLink="/admin" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-indigo-50 text-indigo-700 transition font-semibold">
+                  <fa-icon [icon]="faUserGear" class="text-indigo-500"></fa-icon>
+                  <span>Admin Panel</span>
+                </a>
+              }
+
+              <div class="h-px bg-gray-100 my-1"></div>
+
+              <button
+                (click)="logout()"
+                class="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+              >
+                <fa-icon [icon]="faRightFromBracket"></fa-icon>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          }
+        } @else {
+          <div class="flex items-center gap-1">
+            <a
+              routerLink="/login"
+              class="hidden sm:inline-block px-3 py-2 text-xs font-semibold text-gray-700 hover:text-black transition"
+            >
+              Log in
+            </a>
+            <a
+              routerLink="/register"
+              class="px-4 py-2 text-xs font-bold text-white bg-gray-950 hover:bg-black rounded-full transition shadow-xs"
+            >
+              Register
+            </a>
+          </div>
+        }
+      </div>
+
+      <!-- Cart Button with Count Badge -->
+      <button
+        (click)="toggleCart()"
+        class="relative p-2.5 text-gray-900 hover:text-black hover:bg-gray-100 rounded-full transition cursor-pointer"
+        title="Open Shopping Bag"
+      >
+        <fa-icon [icon]="faBagShopping" class="text-lg"></fa-icon>
+        @if (apiService.cartCount(); as count) {
+          @if (count > 0) {
+            <span class="absolute -top-1 -right-1 bg-gray-950 text-white font-extrabold text-[10px] rounded-full h-5 min-w-5 px-1 flex items-center justify-center shadow-sm">
+              {{ count }}
+            </span>
+          }
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer Menu -->
+  @if (isMobileMenuOpen()) {
+    <div class="md:hidden border-t border-gray-100 bg-white px-4 pt-3 pb-6 space-y-2">
+      <a
+        routerLink="/"
+        (click)="toggleMobileMenu()"
+        class="block px-3 py-2 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50"
+      >
+        Home
       </a>
       <a
-        routerLink="/products/new"
-        routerLinkActive="bg-[#D4AF37]/15 text-[#D4AF37] border-[#D4AF37]/30"
-        class="px-3.5 py-1.5 rounded-xl text-amber-300/90 hover:text-amber-200 hover:bg-[#D4AF37]/10 border border-amber-500/20 transition-all flex items-center gap-1.5"
+        routerLink="/products"
+        (click)="toggleMobileMenu()"
+        class="block px-3 py-2 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50"
       >
-        <fa-icon [icon]="faPlus" class="text-[10px]"></fa-icon>
-        <span>Add Product</span>
-        <span class="text-[9px] bg-[#D4AF37]/20 text-[#D4AF37] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">Admin</span>
+        Catalog & Collections
       </a>
-    </nav>
-  </div>
-
-  <!-- Right Actions -->
-  <div class="flex items-center gap-4">
-    <!-- Search Link -->
-    <a
-      routerLink="/products"
-      class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-slate-300 hover:text-[#D4AF37] transition cursor-pointer"
-      title="Search Products"
-    >
-      <fa-icon [icon]="faMagnifyingGlass" class="text-xs"></fa-icon>
-    </a>
-
-    <!-- Cart Trigger Button -->
-    <button
-      (click)="toggleCart()"
-      class="relative w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-slate-300 hover:text-[#D4AF37] transition cursor-pointer"
-      title="Shopping Cart"
-    >
-      <fa-icon [icon]="faBagShopping" class="text-sm"></fa-icon>
-      @if (apiService.cartCount(); as count) {
-        @if (count > 0) {
-          <span class="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-amber-400 to-[#D4AF37] text-black font-extrabold text-[10px] rounded-full h-5 min-w-5 px-1 flex items-center justify-center shadow-lg shadow-[#D4AF37]/30 animate-pulse">
-            {{ count }}
-          </span>
-        }
+      @if (authService.isLoggedIn()) {
+        <a
+          routerLink="/orders"
+          (click)="toggleMobileMenu()"
+          class="block px-3 py-2 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50"
+        >
+          My Orders
+        </a>
+        <a
+          routerLink="/profile"
+          (click)="toggleMobileMenu()"
+          class="block px-3 py-2 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50"
+        >
+          Profile Settings
+        </a>
       }
-    </button>
-
-    <div class="h-4 w-px bg-white/10"></div>
-
-    <!-- Auth State -->
-    @if (authService.currentUser(); as user) {
-      <div class="flex items-center gap-3">
-        <div class="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-200">
-          <div class="w-5 h-5 rounded-lg bg-[#D4AF37]/20 text-[#D4AF37] flex items-center justify-center text-[10px] font-bold">
-            {{ user.name.charAt(0).toUpperCase() }}
-          </div>
-          <span class="max-w-[100px] truncate hidden sm:inline">{{ user.name }}</span>
-          @if (user.role === 'admin') {
-            <span class="text-[9px] bg-red-500/20 text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Admin</span>
-          }
-        </div>
-
-        <button
-          (click)="logout()"
-          title="Sign Out"
-          class="w-9 h-9 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 flex items-center justify-center transition cursor-pointer"
-        >
-          <fa-icon [icon]="faRightFromBracket" class="text-xs"></fa-icon>
-        </button>
-      </div>
-    } @else {
-      <div class="flex items-center gap-2">
+      @if (authService.isAdmin()) {
         <a
-          routerLink="/login"
-          class="px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition"
+          routerLink="/admin"
+          (click)="toggleMobileMenu()"
+          class="block px-3 py-2 rounded-lg text-sm font-bold text-indigo-600 bg-indigo-50"
         >
-          Sign In
+          Admin Management
         </a>
-        <a
-          routerLink="/register"
-          class="px-4 py-1.5 text-xs font-bold text-black bg-gradient-to-r from-[#FFE082] via-[#D4AF37] to-[#B8952B] hover:brightness-110 rounded-xl transition shadow-[0_0_15px_rgba(212,175,55,0.3)] cursor-pointer"
-        >
-          Join VIP
-        </a>
-      </div>
-    }
-  </div>
+      }
+    </div>
+  }
 </header>
 
-<!-- Slide-Over Shopping Cart Drawer -->
-@if (isCartOpen) {
+<!-- Shopify Style Slide-Over Cart Drawer -->
+@if (isCartOpen()) {
   <div class="fixed inset-0 z-50 overflow-hidden">
     <!-- Backdrop Blur -->
     <div
       (click)="closeCart()"
-      class="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity animate-fade-in"
+      class="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-fade-in"
     ></div>
 
     <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
-      <div class="w-screen max-w-md bg-[#0D121F] border-l border-white/10 shadow-2xl flex flex-col z-10">
+      <div class="w-screen max-w-md bg-white shadow-2xl flex flex-col z-10 animate-slide-in-right">
         <!-- Drawer Header -->
-        <div class="p-6 border-b border-white/10 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
-              <fa-icon [icon]="faCartShopping"></fa-icon>
-            </div>
-            <div>
-              <h2 class="text-base font-bold text-white tracking-wide">Your Luxury Bag</h2>
-              <p class="text-xs text-slate-400">{{ apiService.cartCount() }} items selected</p>
-            </div>
+        <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-bold text-gray-900 tracking-tight">Shopping Bag</h2>
+            <span class="text-xs bg-gray-100 text-gray-700 font-semibold px-2 py-0.5 rounded-full">
+              {{ apiService.cartCount() }} items
+            </span>
           </div>
           <button
             (click)="closeCart()"
-            class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
+            class="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition cursor-pointer"
           >
-            <fa-icon [icon]="faXmark"></fa-icon>
+            <fa-icon [icon]="faXmark" class="text-base"></fa-icon>
           </button>
         </div>
 
-        <!-- Success Toast -->
-        @if (isOrderSuccess) {
-          <div class="m-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-3 text-xs">
-            <fa-icon [icon]="faCheckCircle" class="text-lg"></fa-icon>
+        <!-- Free Shipping Progress Bar (Classic Shopify) -->
+        <div class="px-5 py-3 bg-gray-50 border-b border-gray-200">
+          <div class="flex items-center justify-between text-xs text-gray-700 font-medium mb-1.5">
+            @if (freeShippingRemaining === 0) {
+              <span class="text-emerald-700 font-bold flex items-center gap-1.5">
+                <fa-icon [icon]="faTruckFast"></fa-icon>
+                <span>You unlocked FREE Express Shipping!</span>
+              </span>
+            } @else {
+              <span>
+                Add <strong class="text-gray-950 font-bold">${{ freeShippingRemaining }}</strong> more for <strong class="text-emerald-700">Free Express Delivery</strong>
+              </span>
+            }
+            <span class="text-[11px] text-gray-500 font-semibold">{{ freeShippingPercent | number:'1.0-0' }}%</span>
+          </div>
+          <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-emerald-500 rounded-full transition-all duration-500"
+              [style.width.%]="freeShippingPercent"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Order Success Alert -->
+        @if (orderSuccess()) {
+          <div class="m-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3 text-xs animate-fade-in">
+            <fa-icon [icon]="faCheck" class="text-base text-emerald-600"></fa-icon>
             <div>
-              <p class="font-bold">Order Confirmed Successfully!</p>
-              <p class="text-slate-300 text-[11px] mt-0.5">Your concierge will contact you with shipping details.</p>
+              <p class="font-bold">{{ orderSuccess() }}</p>
+              <p class="text-emerald-700 text-[11px] mt-0.5">Redirecting to your orders list...</p>
             </div>
           </div>
         }
 
         <!-- Cart Items List -->
-        <div class="flex-1 overflow-y-auto p-6 space-y-4">
+        <div class="flex-1 overflow-y-auto p-5 space-y-4">
           @if (apiService.cart().length === 0) {
-            <div class="text-center py-24 text-slate-400 flex flex-col items-center">
-              <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 mb-4">
+            <div class="text-center py-20 flex flex-col items-center">
+              <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-4">
                 <fa-icon [icon]="faBagShopping" class="text-2xl"></fa-icon>
               </div>
-              <h3 class="text-sm font-bold text-white">Your bag is empty</h3>
-              <p class="text-xs text-slate-400 mt-1 max-w-xs">Explore our haute collection and find your signature piece.</p>
+              <h3 class="text-sm font-bold text-gray-900">Your bag is empty</h3>
+              <p class="text-xs text-gray-500 mt-1 max-w-xs">
+                Browse our curated collection and add your favorite pieces to the cart.
+              </p>
               <a
                 routerLink="/products"
                 (click)="closeCart()"
-                class="mt-6 px-6 py-2.5 rounded-xl text-xs font-bold text-black bg-[#D4AF37] hover:bg-[#b8952b] transition shadow-lg shadow-[#D4AF37]/20"
+                class="mt-6 px-6 py-2.5 rounded-full text-xs font-bold text-white bg-gray-950 hover:bg-black transition shadow-sm"
               >
-                Browse Collection
+                Start Shopping
               </a>
             </div>
           } @else {
             @for (item of apiService.cart(); track item.id) {
-              <div class="flex items-center gap-4 p-3.5 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition">
+              <div class="flex gap-4 p-3 bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition">
                 <img
                   [src]="item.product.image_url"
                   [alt]="item.product.title"
-                  class="w-16 h-16 object-contain bg-black/40 rounded-xl p-1.5 border border-white/5"
+                  class="w-20 h-20 object-contain bg-gray-50 rounded-lg p-1 border border-gray-100"
                 />
-                <div class="flex-1 min-w-0">
-                  <span class="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider">
-                    {{ item.product.category?.name || 'Exclusive' }}
-                  </span>
-                  <h4 class="text-xs font-bold text-slate-100 truncate mt-0.5">{{ item.product.title }}</h4>
-                  <p class="text-xs font-black text-white mt-1">${{ item.product.price }}</p>
+                <div class="flex-1 min-w-0 flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-start justify-between gap-2">
+                      <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                        {{ item.product.brand?.name || item.product.category?.name || 'Exclusive' }}
+                      </span>
+                      <button
+                        (click)="removeItem(item.product._id || item.product.id)"
+                        class="text-gray-400 hover:text-rose-600 transition p-1 cursor-pointer"
+                        title="Remove"
+                      >
+                        <fa-icon [icon]="faTrash" class="text-xs"></fa-icon>
+                      </button>
+                    </div>
 
-                  <div class="flex items-center gap-2 mt-2">
-                    <button
-                      (click)="decreaseQuantity(item)"
-                      class="w-6 h-6 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 flex items-center justify-center text-xs font-bold border border-white/10 transition cursor-pointer"
-                    >
-                      <fa-icon [icon]="faMinus" class="text-[9px]"></fa-icon>
-                    </button>
-                    <span class="text-xs font-bold px-2 text-white">{{ item.quantity }}</span>
-                    <button
-                      (click)="increaseQuantity(item)"
-                      class="w-6 h-6 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 flex items-center justify-center text-xs font-bold border border-white/10 transition cursor-pointer"
-                    >
-                      <fa-icon [icon]="faPlus" class="text-[9px]"></fa-icon>
-                    </button>
+                    <h4 class="text-xs font-bold text-gray-900 truncate mt-0.5">
+                      {{ item.product.title }}
+                    </h4>
+                  </div>
+
+                  <div class="flex items-center justify-between mt-2">
+                    <!-- Shopify Stepper -->
+                    <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white">
+                      <button
+                        (click)="decreaseQuantity(item)"
+                        class="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition cursor-pointer"
+                      >
+                        <fa-icon [icon]="faMinus" class="text-[9px]"></fa-icon>
+                      </button>
+                      <span class="text-xs font-bold px-2.5 text-gray-900">{{ item.quantity }}</span>
+                      <button
+                        (click)="increaseQuantity(item)"
+                        class="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition cursor-pointer"
+                      >
+                        <fa-icon [icon]="faPlus" class="text-[9px]"></fa-icon>
+                      </button>
+                    </div>
+
+                    <p class="text-xs font-extrabold text-gray-950">
+                      ${{ item.product.price * item.quantity }}
+                    </p>
                   </div>
                 </div>
-
-                <button
-                  (click)="removeItem(item.product._id || item.product.id)"
-                  class="w-8 h-8 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 flex items-center justify-center transition cursor-pointer"
-                  title="Remove"
-                >
-                  <fa-icon [icon]="faTrash" class="text-xs"></fa-icon>
-                </button>
               </div>
             }
           }
@@ -212,39 +359,36 @@
 
         <!-- Drawer Footer / Summary -->
         @if (apiService.cart().length > 0) {
-          <div class="p-6 border-t border-white/10 bg-[#0B0F19] space-y-4">
-            <div class="space-y-1.5 text-xs text-slate-400">
+          <div class="p-5 border-t border-gray-200 bg-gray-50 space-y-3">
+            <div class="space-y-1.5 text-xs text-gray-600">
               <div class="flex justify-between">
                 <span>Subtotal</span>
-                <span class="text-white font-medium">${{ apiService.cartTotal() }}</span>
+                <span class="text-gray-950 font-bold text-sm">${{ apiService.cartTotal() }}</span>
               </div>
-              <div class="flex justify-between">
-                <span>VIP Insured Delivery</span>
-                <span class="text-emerald-400 font-semibold">Complimentary</span>
+              <div class="flex justify-between text-gray-500 text-[11px]">
+                <span>Shipping</span>
+                <span>{{ freeShippingRemaining === 0 ? 'FREE' : 'Calculated at checkout' }}</span>
               </div>
-              <div class="h-px bg-white/10 my-2"></div>
-              <div class="flex justify-between text-sm font-bold text-white">
-                <span>Total</span>
-                <span class="text-[#D4AF37] text-base">${{ apiService.cartTotal() }}</span>
-              </div>
+              <p class="text-[11px] text-gray-400 pt-1">Taxes and discounts calculated during checkout.</p>
             </div>
 
+            <!-- Shopify Style Checkout Button -->
             <button
               (click)="checkout()"
-              [disabled]="isCheckingOut"
-              class="w-full py-3.5 rounded-xl text-xs font-extrabold uppercase tracking-wider text-black bg-gradient-to-r from-[#FFE082] via-[#D4AF37] to-[#B8952B] hover:brightness-110 active:scale-[0.99] transition shadow-[0_0_25px_rgba(212,175,55,0.3)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              [disabled]="isCheckingOut()"
+              class="w-full py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-gray-950 hover:bg-black active:scale-[0.99] transition shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              @if (isCheckingOut) {
-                <div class="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                <span>Securing Order...</span>
+              @if (isCheckingOut()) {
+                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Processing Order...</span>
               } @else {
-                <span>Proceed to Checkout</span>
+                <span>Proceed to Checkout &bull; ${{ apiService.cartTotal() }}</span>
               }
             </button>
 
             <button
               (click)="clearCart()"
-              class="w-full text-center text-[11px] text-slate-400 hover:text-slate-200 transition cursor-pointer"
+              class="w-full text-center text-xs text-gray-400 hover:text-gray-600 transition cursor-pointer"
             >
               Clear Cart
             </button>
